@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import '../services/RouteManager.dart';
 
 class Message extends StatefulWidget {
-  Message({Key? key}) : super(key: key);
+  const Message({Key? key}) : super(key: key);
 
   @override
   State<Message> createState() => _MessageState();
@@ -15,7 +15,7 @@ class _MessageState extends State<Message> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Message'),
+        title: const Text('Message'),
         centerTitle: true,
         backgroundColor: Colors.red,
       ),
@@ -28,7 +28,7 @@ class _MessageState extends State<Message> {
             child: Visibility(
               visible: 'Message' == context.watch<ManageRoute>().Message,
               child: Row(
-                children: [
+                children: const [
                   Text(
                     'To:',
                     style: TextStyle(fontSize: 18),
@@ -37,7 +37,7 @@ class _MessageState extends State<Message> {
                 ],
               ),
               replacement: Row(
-                children: [
+                children: const [
                   Text(
                     'From:',
                     style: TextStyle(fontSize: 18),
@@ -47,7 +47,7 @@ class _MessageState extends State<Message> {
               ),
             ),
           ),
-          Divider(
+          const Divider(
             thickness: 2,
           ),
           Visibility(
@@ -73,7 +73,7 @@ class _MessageState extends State<Message> {
                     top: MediaQuery.of(context).size.height * 0.02,
                     left: MediaQuery.of(context).size.width * 0.04,
                     right: MediaQuery.of(context).size.width * 0.04),
-                child: Text(
+                child: const Text(
                   'Content of Message Here',
                 )),
           ),
@@ -84,13 +84,13 @@ class _MessageState extends State<Message> {
                 onPressed: () {
                   Get.back();
                 },
-                child: Text('Send')),
+                child: const Text('Send')),
             replacement: ElevatedButton(
                 onPressed: () {
-                  Get.off(Message());
+                  Get.off(const Message());
                   context.read<ManageRoute>().ChangeMessage('Message');
                 },
-                child: Text('Reply')),
+                child: const Text('Reply')),
           )
         ],
       ),

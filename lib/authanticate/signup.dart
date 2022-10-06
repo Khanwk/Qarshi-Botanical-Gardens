@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +5,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:qarshi_app/authanticate/login.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({Key? key}) : super(key: key);
@@ -19,73 +17,73 @@ var _passwordVisible = true;
 var _value = false;
 
 class _SignUpState extends State<SignUp> {
-  TextEditingController _SignupEmailController = TextEditingController();
-  TextEditingController _SignupPasswordController = TextEditingController();
-  TextEditingController _ConfirmPasswordController = TextEditingController();
-  TextEditingController _nameController = TextEditingController();
-  TextEditingController _addressController = TextEditingController();
+  final TextEditingController _SignupEmailController = TextEditingController();
+  final TextEditingController _SignupPasswordController = TextEditingController();
+  final TextEditingController _ConfirmPasswordController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
 
-  Future creaeUser(
-      {required String name,
-      required String email,
-      required String password,
-      required String address}) async {
-    final docUser = FirebaseFirestore.instance.collection('observers').doc();
-    final observerData = {
-      'id': docUser.id,
-      'name': name,
-      'email': email,
-      'password': password,
-      'address': address,
-      'observer': true
-    };
-    await docUser.set(observerData);
-    Get.off(Home());
-  }
+  // Future creaeUser(
+  //     {required String name,
+  //     required String email,
+  //     required String password,
+  //     required String address}) async {
+  //   final docUser = FirebaseFirestore.instance.collection('observers').doc();
+  //   final observerData = {
+  //     'id': docUser.id,
+  //     'name': name,
+  //     'email': email,
+  //     'password': password,
+  //     'address': address,
+  //     'observer': true
+  //   };
+  //   await docUser.set(observerData);
+  //   Get.off(Home());
+  // }
 
-  void Signup() async {
-    String email = _SignupEmailController.text.trim();
-    String password = _SignupPasswordController.text.trim();
-    String confirmPassword = _ConfirmPasswordController.text.trim();
-    // String name = _nameController.text.trim();
-    // String address = _addressController.text.trim();
+  // void Signup() async {
+  //   String email = _SignupEmailController.text.trim();
+  //   String password = _SignupPasswordController.text.trim();
+  //   String confirmPassword = _ConfirmPasswordController.text.trim();
+  //   // String name = _nameController.text.trim();
+  //   // String address = _addressController.text.trim();
 
-    if (password != confirmPassword) {
-      Fluttertoast.showToast(
-          msg: "Password Don't Match !",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 13.0);
-    }
-    if (email == '' || password == '' || confirmPassword == '') {
-      Fluttertoast.showToast(
-          msg: "Please Fill all Feilds !",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 13.0);
-    } else {
-      try {
-        UserCredential userCredential = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(email: email, password: password);
-        // User user = userCredential.user!;
-        // await FirebaseFirestore.instance
-        //     .collection('users')
-        //     .doc(user.uid)
-        //     .set({'name': name, 'address': address});
-        if (userCredential.user != null) {
-          Get.off(Home());
-        }
-      } on FirebaseAuthException catch (ex) {
-        log(ex.code.toString());
-      }
-    }
-  }
+  //   if (password != confirmPassword) {
+  //     Fluttertoast.showToast(
+  //         msg: "Password Don't Match !",
+  //         toastLength: Toast.LENGTH_SHORT,
+  //         gravity: ToastGravity.BOTTOM,
+  //         timeInSecForIosWeb: 1,
+  //         backgroundColor: Colors.red,
+  //         textColor: Colors.white,
+  //         fontSize: 13.0);
+  //   }
+  //   if (email == '' || password == '' || confirmPassword == '') {
+  //     Fluttertoast.showToast(
+  //         msg: "Please Fill all Feilds !",
+  //         toastLength: Toast.LENGTH_SHORT,
+  //         gravity: ToastGravity.BOTTOM,
+  //         timeInSecForIosWeb: 1,
+  //         backgroundColor: Colors.red,
+  //         textColor: Colors.white,
+  //         fontSize: 13.0);
+  //   } else {
+  //     try {
+  //       UserCredential userCredential = await FirebaseAuth.instance
+  //           .createUserWithEmailAndPassword(email: email, password: password);
+  //       // User user = userCredential.user!;
+  //       // await FirebaseFirestore.instance
+  //       //     .collection('users')
+  //       //     .doc(user.uid)
+  //       //     .set({'name': name, 'address': address});
+  //       if (userCredential.user != null) {
+  //         Get.off(Home());
+  //       }
+  //     } on FirebaseAuthException catch (ex) {
+  //       log(ex.code.toString());
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -265,12 +263,83 @@ class _SignUpState extends State<SignUp> {
                                     textColor: Colors.white,
                                     fontSize: 13.0);
                               } else {
-                                creaeUser(
-                                    name: _nameController.text,
-                                    email: _SignupEmailController.text,
-                                    password: _SignupPasswordController.text,
-                                    address: _addressController.text);
+                                // FirebaseAuth.instance
+                                //     .createUserWithEmailAndPassword(
+                                //         email: _SignupEmailController.text,
+                                //         password:
+                                //             _SignupPasswordController.text)
+                                //     .then((signedInUser) {
+                                //   UserManagment().storeNewObserver(
+                                //       signedInUser,
+                                //       _nameController,
+                                //       _addressController,
+                                //       context);
+                                // }).catchError((e) {});
+
+                                try {
+                                  FirebaseAuth.instance
+                                      .createUserWithEmailAndPassword(
+                                        email: _SignupEmailController.text,
+                                        password:
+                                            _SignupPasswordController.text,
+                                      )
+                                      .then((signedInUser) => FirebaseFirestore
+                                              .instance
+                                              .collection('observers')
+                                              .doc(signedInUser.user!.uid)
+                                              .set({
+                                            'email': signedInUser.user!.email,
+                                            'name': _nameController.text,
+                                            'address': _addressController.text,
+                                            'role': 'Researcher',
+                                            'rank': '0',
+                                            'noObservation': '0'
+                                          }).then((signedInUser) =>
+                                                  Fluttertoast.showToast(
+                                                      msg: 'success',
+                                                      toastLength:
+                                                          Toast.LENGTH_SHORT,
+                                                      gravity:
+                                                          ToastGravity.BOTTOM,
+                                                      timeInSecForIosWeb: 1,
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                      textColor: Colors.white,
+                                                      fontSize: 13.0)));
+                                } on FirebaseAuthException catch (e) {
+                                  if (e.code == 'weak-password') {
+                                    Fluttertoast.showToast(
+                                        msg:
+                                            'The password provided is too weak.',
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.BOTTOM,
+                                        timeInSecForIosWeb: 1,
+                                        backgroundColor: Colors.red,
+                                        textColor: Colors.white,
+                                        fontSize: 13.0);
+                                  } else if (e.code == 'email-already-in-use') {
+                                    Fluttertoast.showToast(
+                                        msg:
+                                            'The account already exists for that email.',
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.BOTTOM,
+                                        timeInSecForIosWeb: 1,
+                                        backgroundColor: Colors.red,
+                                        textColor: Colors.white,
+                                        fontSize: 13.0);
+                                  }
+                                } catch (e) {
+                                  Fluttertoast.showToast(
+                                      msg: e.toString(),
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.BOTTOM,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor: Colors.red,
+                                      textColor: Colors.white,
+                                      fontSize: 13.0);
+                                }
                               }
+                              Get.off(const Home());
                               // Signup();
                             },
                             child: const Text(
@@ -279,7 +348,7 @@ class _SignUpState extends State<SignUp> {
                                   TextStyle(color: Colors.white, fontSize: 18),
                             ),
                             style: ElevatedButton.styleFrom(
-                                primary: Colors.red,
+                                backgroundColor: Colors.red,
                                 elevation: 3,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(30.0),

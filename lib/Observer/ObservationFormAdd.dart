@@ -46,7 +46,7 @@ class _CameraPageState extends State<CameraPage> {
       setState(() {
         this.image = imageTemp;
       });
-    } on PlatformException catch (e) {
+    } on PlatformException {
       print('Failed');
     }
   }
@@ -94,7 +94,7 @@ class _CameraPageState extends State<CameraPage> {
   @override
   void initState() {
     super.initState();
-    _textController = TextEditingController(text: '$location');
+    _textController = TextEditingController(text: location);
   }
 
   Future<void> GetAddressFromLatLong(Position position) async {
@@ -135,17 +135,17 @@ class _CameraPageState extends State<CameraPage> {
                       pickImage(ImageSource.camera);
                       Navigator.pop(context);
                     },
-                    child: Text('Camera')),
+                    child: const Text('Camera')),
                 CupertinoActionSheetAction(
                     onPressed: () {
                       pickImage(ImageSource.gallery);
                       Navigator.pop(context);
                     },
-                    child: Text('Gallery')),
+                    child: const Text('Gallery')),
                 CupertinoActionSheetAction(
                     isDestructiveAction: true,
                     onPressed: () => Navigator.pop(context),
-                    child: Text('Cancel'))
+                    child: const Text('Cancel'))
               ],
             ));
   }
@@ -247,7 +247,7 @@ class _CameraPageState extends State<CameraPage> {
                                   ],
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                    primary: Colors.white,
+                                    backgroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(30),
                                         side: const BorderSide(
@@ -264,7 +264,7 @@ class _CameraPageState extends State<CameraPage> {
                         children: [
                           CupertinoTextFormFieldRow(
                             prefix: const Icon(Icons.notes_outlined),
-                            placeholder: 'Enter Description',
+                            // placeholder: 'Enter Description',
                             validator: (String? value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter a value';
@@ -352,7 +352,7 @@ class _CameraPageState extends State<CameraPage> {
                             ),
                           ),
                         ]),
-                    Divider(
+                    const Divider(
                       thickness: 2,
                     ),
                     SizedBox(
@@ -360,18 +360,19 @@ class _CameraPageState extends State<CameraPage> {
                     ),
                     SizedBox(
                         height: MediaQuery.of(context).size.height * 0.02,
-                        child: Text('Or')),
+                        child: const Text('Or')),
                     SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.045,
-                      child: TextButton(
-                          onPressed: () {
-                            Get.to(Project());
-                            context
-                                .read<ManageRoute>()
-                                .ChangeProject('project');
-                          },
-                          child: Text('Create Project')),
-                    )
+                        height: MediaQuery.of(context).size.height * 0.045,
+                        // child: TextButton(
+                        //     onPressed: () {
+                        //       Get.to(const Project());
+                        //       context
+                        //           .read<ManageRoute>()
+                        //           .ChangeProject('project');
+                        //     },
+                        child: const Text('Create Project')
+                        //  ),
+                        )
                   ],
                 ),
 
@@ -393,7 +394,7 @@ class _CameraPageState extends State<CameraPage> {
                               size: 45,
                             ),
                             style: ElevatedButton.styleFrom(
-                                primary: Colors.lightGreen.shade200)),
+                                backgroundColor: Colors.lightGreen.shade200)),
                       ),
                       SizedBox(
                           width: MediaQuery.of(context).size.width * 0.5,
@@ -409,7 +410,7 @@ class _CameraPageState extends State<CameraPage> {
                                 size: 45,
                               ),
                               style: ElevatedButton.styleFrom(
-                                  primary: Colors.red.shade200))),
+                                  backgroundColor: Colors.red.shade200))),
                     ],
                   ),
                 ),

@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:qarshi_app/Researchers/BottomNaviagtor.dart';
 import 'package:qarshi_app/authanticate/login.dart';
-import 'package:qarshi_app/Observer/start.dart';
-import 'package:qarshi_app/Observer/userpage.dart';
 
 class Splash extends StatefulWidget {
   const Splash({Key? key}) : super(key: key);
@@ -17,7 +14,7 @@ class _SplashState extends State<Splash> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(milliseconds: 3000), () => Get.off(Home()));
+    Timer(const Duration(milliseconds: 3000), () => Get.off(const Home()));
   }
 
   @override

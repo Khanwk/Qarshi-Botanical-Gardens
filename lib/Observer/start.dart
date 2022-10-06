@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
+import 'package:get/get.dart';
+// import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:provider/provider.dart';
-import 'package:qarshi_app/Observer/ObservationFormAdd.dart';
+import 'package:qarshi_app/Researchers/AddNew.dart';
 import 'package:qarshi_app/accounts/account.dart';
 import 'package:qarshi_app/Observer/userpage.dart';
 import 'package:qarshi_app/services/RouteManager.dart';
@@ -14,20 +16,23 @@ class Start extends StatefulWidget {
 }
 
 class _StartState extends State<Start> {
+  String role = Get.arguments;
+
   final PersistentTabController _controller =
       PersistentTabController(initialIndex: 0);
 
   @override
   Widget build(BuildContext context) {
+    context.read<ManageRoute>().ChangeUser(role);
     return Scaffold(
         backgroundColor: Colors.white,
         body: PersistentTabView(
           context,
           controller: _controller,
-          screens: [
+          screens: const [
             UserPage(),
             // Search(),
-            CameraPage(),
+            ResearcherAddNew(),
             // MyObservation(),
             Account()
           ],

@@ -1,140 +1,364 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:qarshi_app/Observer/ProjectAdd.dart';
 import 'package:qarshi_app/Observer/Sepecies.dart';
+import 'package:qarshi_app/Observer/chat.dart';
+import 'package:qarshi_app/services/dbManager.dart';
 
 import '../services/RouteManager.dart';
 
 class Project extends StatefulWidget {
-  Project({Key? key}) : super(key: key);
+  const Project({Key? key}) : super(key: key);
 
   @override
   State<Project> createState() => _ProjectState();
 }
 
 class _ProjectState extends State<Project> {
+  String Projid = Get.arguments;
+
+  DocumentSnapshot? obList;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Project'),
-        centerTitle: true,
-        backgroundColor: Colors.red,
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.only(
-                top: MediaQuery.of(context).size.height * 0.02,
-                left: MediaQuery.of(context).size.width * 0.04),
-            child: Visibility(
-              visible: 'project' == context.watch<ManageRoute>().Project,
-              child: Column(children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).size.height * 0.02,
-                      left: MediaQuery.of(context).size.width * 0.04,
-                      right: MediaQuery.of(context).size.width * 0.04),
-                  child: TextField(
-                    // controller: _addressController,
-                    // maxLines: 5,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.folder),
-                      hintText: 'Enter Project Name',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30.0)),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).size.height * 0.02,
-                      left: MediaQuery.of(context).size.width * 0.04,
-                      right: MediaQuery.of(context).size.width * 0.04),
-                  child: TextField(
-                    // controller: _addressController,
-                    maxLines: 5,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.message),
-                      hintText: '\n\n  Enter Project Description',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30.0)),
-                    ),
-                  ),
-                ),
-                ElevatedButton(
-                    onPressed: () {
-                      Get.off(Project());
-                      context.read<ManageRoute>().ChangeMessage('ProjectShow');
-                    },
-                    child: Text('Save')),
-              ]),
-              replacement: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.8,
-                child: ListView.builder(
-                  // shrinkWrap: true,
-                  itemCount: 20,
-                  itemBuilder: (context, index) {
-                    return Card(
-
-                        // child: Padding(
-                        // padding: const EdgeInsets.all(8.0),
-                        child: ListTile(
-                      onTap: (() {
-                        Get.to(Sepecies(), arguments: ['Observe', 4]);
-                      }),
-                      title: Text('Observation $index'),
-                      subtitle: Text('Observer'),
-                    ));
+        appBar: AppBar(
+          title: const Text('Project'),
+          centerTitle: true,
+          backgroundColor: Colors.red,
+          actions: [
+            Visibility(
+              // visible: context.watch<dbManager>().projectdoc!['admin'] ==
+              //     context.watch<dbManager>().currentobserverdoc!['uid'],
+              child: PopupMenuButton(
+                  // add icon, by default "3 dot" icon
+                  icon: const Icon(Icons.add),
+                  itemBuilder: (context) {
+                    return [
+                      const PopupMenuItem<int>(
+                        value: 0,
+                        child: Text("Observation"),
+                      ),
+                      const PopupMenuItem<int>(
+                        value: 1,
+                        child: Text("Member"),
+                      ),
+                    ];
                   },
-                ),
-              ),
+                  onSelected: (value) {
+                    if (value == 0) {
+                      Get.to(ProjectAdd(), arguments: [Projid, 'observation']);
+                      // Get.to(const ChatPage());
+                    } else if (value == 1) {
+                      Get.to(const ProjectAdd(), arguments: [Projid, 'member']);
+                    }
+                  }),
             ),
-          ),
-          // Visibility(
-          //   visible: 'Message' == context.watch<ManageRoute>().Message,
-          //   child: Padding(
-          //     padding: EdgeInsets.only(
-          //         top: MediaQuery.of(context).size.height * 0.02,
-          //         left: MediaQuery.of(context).size.width * 0.04,
-          //         right: MediaQuery.of(context).size.width * 0.04),
-          //     child: TextField(
-          //       // controller: _addressController,
-          //       maxLines: 5,
-          //       decoration: InputDecoration(
-          //         prefixIcon: const Icon(Icons.message),
-          //         hintText: '\n\n  Enter Your Message',
-          //         border: OutlineInputBorder(
-          //             borderRadius: BorderRadius.circular(30.0)),
-          //       ),
-          //     ),
-          //   ),
-          //   replacement: Padding(
-          //       padding: EdgeInsets.only(
-          //           top: MediaQuery.of(context).size.height * 0.02,
-          //           left: MediaQuery.of(context).size.width * 0.04,
-          //           right: MediaQuery.of(context).size.width * 0.04),
-          //       child: Text(
-          //         'Content of Message Here',
-          //       )),
-          // ),
-          // SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-          // Visibility(
-          //   visible: 'Message' == context.watch<ManageRoute>().Message,
-          //   child: ElevatedButton(
-          //       onPressed: () {
-          //         Get.back();
-          //       },
-          //       child: Text('Send')),
-          //   replacement: ElevatedButton(
-          //       onPressed: () {
-          //         Get.off(Message());
-          //         context.read<ManageRoute>().ChangeMessage('Message');
-          //       },
-          //       child: Text('Reply')),
-          // )
-        ],
-      ),
-    );
+          ],
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: DefaultTabController(
+                  length: 2,
+                  initialIndex: 0,
+                  child: Column(children: [
+                    const TabBar(
+                      labelColor: Colors.red,
+                      unselectedLabelColor: Colors.grey,
+                      indicatorColor: Colors.red,
+                      tabs: [
+                        Tab(child: Text("Observations")),
+                        Tab(child: Text("Members"))
+                      ],
+                    ),
+                    Expanded(
+                      child: TabBarView(children: [
+                        Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height * 0.8,
+                          child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: context
+                                  .watch<dbManager>()
+                                  .projectdoc!['observationList']
+                                  .length,
+                              itemBuilder: ((context, findex) {
+                                List checkList = context
+                                    .watch<dbManager>()
+                                    .projectdoc!['observationList'];
+                                return StreamBuilder(
+                                    stream: FirebaseFirestore.instance
+                                        .collection('observers')
+                                        .snapshots(),
+                                    builder: (BuildContext context,
+                                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                                      if (!snapshot.hasData) {
+                                        return const Center(
+                                          child: CircularProgressIndicator(),
+                                        );
+                                      } else {
+                                        return ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: snapshot.data!.docs.length,
+                                          itemBuilder: (context, index) {
+                                            String id =
+                                                snapshot.data!.docs[index].id;
+                                            DocumentSnapshot projectdata =
+                                                snapshot.data!.docs[index];
+                                            return StreamBuilder(
+                                                stream: FirebaseFirestore
+                                                    .instance
+                                                    .collection('observers')
+                                                    .doc(id)
+                                                    .collection('observations')
+                                                    .where('BotanicalName',
+                                                        isEqualTo:
+                                                            checkList[findex])
+                                                    .snapshots(),
+                                                builder: (BuildContext context,
+                                                    AsyncSnapshot<QuerySnapshot>
+                                                        Projectssnapshot) {
+                                                  if (!snapshot.hasData) {
+                                                    return const Center(
+                                                      child:
+                                                          CircularProgressIndicator(),
+                                                    );
+                                                  } else {
+                                                    return ListView.builder(
+                                                        shrinkWrap: true,
+                                                        itemCount:
+                                                            Projectssnapshot
+                                                                .data!
+                                                                .docs
+                                                                .length,
+                                                        itemBuilder:
+                                                            (context, index) {
+                                                          DocumentSnapshot
+                                                              Subprojectdata =
+                                                              Projectssnapshot
+                                                                  .data!
+                                                                  .docs[index];
+                                                          String Projectid =
+                                                              Projectssnapshot
+                                                                  .data!
+                                                                  .docs[index]
+                                                                  .id;
+                                                          context
+                                                              .read<dbManager>()
+                                                              .ChangeObservationDoc(
+                                                                  Subprojectdata);
+                                                          String obName =
+                                                              projectdata[
+                                                                  'name'];
+                                                          return Card(
+                                                              clipBehavior: Clip
+                                                                  .antiAlias,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            24),
+                                                              ), // RoundedRectangleBorder
+                                                              child: Column(
+                                                                  children: [
+                                                                    Container(
+                                                                      decoration: const BoxDecoration(
+                                                                          image: DecorationImage(
+                                                                              image: ExactAssetImage(
+                                                                                'assets/Image/splash.png',
+                                                                              ),
+                                                                              fit: BoxFit.cover)),
+                                                                      height:
+                                                                          100,
+                                                                      width:
+                                                                          400,
+                                                                      child:
+                                                                          Align(
+                                                                        alignment:
+                                                                            Alignment.topRight,
+                                                                        child:
+                                                                            Padding(
+                                                                          padding: const EdgeInsets.only(
+                                                                              right: 7,
+                                                                              top: 7),
+                                                                          child: Container(
+                                                                              width: 20.0,
+                                                                              height: 20.0,
+                                                                              // padding: const EdgeInsets.all(8.0),
+                                                                              decoration: BoxDecoration(
+                                                                                shape: BoxShape.circle,
+                                                                                color: Colors.green,
+                                                                                border: Border.all(color: Colors.black),
+                                                                              )),
+                                                                        ),
+                                                                      ),
+                                                                    ), // Ink.image
+                                                                    Padding(
+                                                                      padding: const EdgeInsets
+                                                                              .only(
+                                                                          left:
+                                                                              10),
+                                                                      child:
+                                                                          Align(
+                                                                        alignment:
+                                                                            Alignment.centerLeft,
+                                                                        child:
+                                                                            Text(
+                                                                          context
+                                                                              .watch<dbManager>()
+                                                                              .observationdoc!['BotanicalName'],
+                                                                          style:
+                                                                              const TextStyle(
+                                                                            fontWeight:
+                                                                                FontWeight.bold,
+                                                                            color:
+                                                                                Color(0xff050505),
+                                                                            fontSize:
+                                                                                18,
+                                                                          ), // TextStyle
+                                                                        ),
+                                                                      ),
+                                                                    ),
+
+                                                                    Align(
+                                                                      alignment:
+                                                                          Alignment
+                                                                              .centerLeft,
+                                                                      child:
+                                                                          Padding(
+                                                                        padding: const EdgeInsets.only(
+                                                                            top:
+                                                                                5,
+                                                                            left:
+                                                                                10),
+                                                                        child:
+                                                                            Text(
+                                                                          obName,
+                                                                          style:
+                                                                              const TextStyle(fontSize: 16),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    Align(
+                                                                      alignment:
+                                                                          Alignment
+                                                                              .centerLeft,
+                                                                      child:
+                                                                          Padding(
+                                                                        padding: const EdgeInsets.only(
+                                                                            top:
+                                                                                5,
+                                                                            left:
+                                                                                10),
+                                                                        child:
+                                                                            Text(
+                                                                          Subprojectdata[
+                                                                              'location'],
+                                                                          style:
+                                                                              const TextStyle(fontSize: 16),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    // Padding(
+                                                                    //   padding: const EdgeInsets.only(right: 281, top: 5),
+                                                                    //   child: Text(
+                                                                    //     '  Date ',
+                                                                    //     style: TextStyle(fontSize: 16),
+                                                                    //   ),
+                                                                    // ),
+                                                                    //
+                                                                    // Text
+                                                                  ]));
+                                                        });
+                                                  }
+                                                });
+                                          },
+                                        );
+                                      }
+                                    });
+                              })),
+                        ),
+                        Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height * 0.8,
+                          child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: context
+                                  .watch<dbManager>()
+                                  .projectdoc!['memberList']
+                                  .length,
+                              itemBuilder: ((context, findex) {
+                                List checkList = context
+                                    .watch<dbManager>()
+                                    .projectdoc!['memberList'];
+
+                                return StreamBuilder(
+                                    stream: FirebaseFirestore.instance
+                                        .collection('observers')
+                                        .where('name',
+                                            isEqualTo: checkList[findex])
+                                        .snapshots(),
+                                    builder: (BuildContext context,
+                                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                                      if (!snapshot.hasData) {
+                                        return const Center(
+                                          child: CircularProgressIndicator(),
+                                        );
+                                      } else {
+                                        return ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: snapshot.data!.docs.length,
+                                          itemBuilder: (context, index) {
+                                            DocumentSnapshot projectdata =
+                                                snapshot.data!.docs[index];
+                                            return Card(
+                                              child: ListTile(
+                                                leading: const Image(
+                                                  width: 50,
+                                                  image: AssetImage(
+                                                      'assets/Image/splash.png'),
+                                                ), // Ink.image
+
+                                                title: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        projectdata['name'],
+                                                        style: const TextStyle(
+                                                            fontSize: 18),
+                                                      ),
+                                                      Text(
+                                                        "Rank: ${index + 1}",
+                                                        style: const TextStyle(
+                                                            fontSize: 12),
+                                                      )
+                                                    ]),
+
+                                                trailing: Text(
+                                                  projectdata['noObservation']
+                                                      .toString(),
+                                                  style: const TextStyle(
+                                                      fontSize: 16),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      }
+                                    });
+                              })),
+                        ),
+                      ]),
+                    )
+                  ])),
+            ),
+          ],
+        ));
   }
 }

@@ -1,28 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
+import 'package:get/get.dart';
+// import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+import 'package:provider/provider.dart';
 import 'package:qarshi_app/Observer/userpage.dart';
 import 'package:qarshi_app/Researchers/AddNew.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:qarshi_app/accounts/account.dart';
 
+import '../services/RouteManager.dart';
+
 class ResearcherHome extends StatefulWidget {
-  ResearcherHome({Key? key}) : super(key: key);
+  const ResearcherHome({Key? key}) : super(key: key);
 
   @override
   State<ResearcherHome> createState() => _ResearcherHomeState();
 }
 
 class _ResearcherHomeState extends State<ResearcherHome> {
+  String role = Get.arguments;
   final PersistentTabController _controller =
       PersistentTabController(initialIndex: 0);
   @override
   Widget build(BuildContext context) {
+    context.read<ManageRoute>().ChangeUser(role);
     return Scaffold(
         backgroundColor: Colors.white,
         body: PersistentTabView(
           context,
           controller: _controller,
-          screens: [UserPage(), ResearcherAddNew(), Account()],
+          screens: const [UserPage(), ResearcherAddNew(), Account()],
           items: navBarItems(),
           navBarStyle: NavBarStyle.style17,
         ));
