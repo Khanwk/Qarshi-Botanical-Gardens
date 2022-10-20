@@ -1,6 +1,9 @@
 import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:qarshi_app/Observer/Sepecies.dart';
+import 'package:qarshi_app/services/dbManager.dart';
 import 'package:sizer/sizer.dart';
 import 'package:get/get.dart';
 
@@ -13,9 +16,35 @@ class Results extends StatefulWidget {
 
 class _ResultsState extends State<Results> {
   File image = Get.arguments;
+  String url = "";
   List plantName = ['Rose', 'Lavender', 'Mapel'];
   List plantProb = ['91.1 %', '92 %', '99 %'];
   // List<File> plantImage = [File.image, File.image];
+  getImage() async {
+    String id = (Provider.of<dbManager>(context, listen: false)
+                .currentobserverdoc!['uid'] +
+            ".jpg")
+        .toString();
+    print("id :: $id");
+    url = await FirebaseStorage.instance
+        .ref()
+        .child('TempScan/$id ')
+        .getDownloadURL();
+
+    print('url :$url');
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    // init();
+    getImage();
+// no need of the file extension, the name will do fine.
+
+    // url = await ref.getDownloadURL();
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +65,13 @@ class _ResultsState extends State<Results> {
             Align(
               alignment: Alignment.center,
               child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.2,
-                  width: MediaQuery.of(context).size.width * 0.25,
-                  child: image == null
-                      ? const Text('No image to show')
-                      : Image.file(image)),
+                height: MediaQuery.of(context).size.height * 0.2,
+                width: MediaQuery.of(context).size.width * 0.25,
+                child: Image.network(
+                  url.toString(),
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
             const Divider(
               thickness: 1,

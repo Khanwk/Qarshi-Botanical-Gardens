@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:qarshi_app/services/api_services.dart';
 import 'package:qarshi_app/services/dbManager.dart';
 
 var _passwordVisible = true;
@@ -90,7 +91,10 @@ class _HomeState extends State<Home> {
       home: Scaffold(
         resizeToAvoidBottomInset: false,
         body: _loggedin
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(
+                child: CircularProgressIndicator(
+                color: Colors.red,
+              ))
             : Column(mainAxisAlignment: MainAxisAlignment.start, children: <
                 Widget>[
                 Column(
@@ -99,12 +103,17 @@ class _HomeState extends State<Home> {
                       padding: EdgeInsets.only(
                         top: MediaQuery.of(context).size.height * 0.11,
                       ),
-                      child: const Text(
-                        'SIGN IN',
-                        style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 34,
-                            fontWeight: FontWeight.bold),
+                      child: InkWell(
+                        onTap: () {
+                          ApiServices.fetchAlbum();
+                        },
+                        child: const Text(
+                          'SIGN IN',
+                          style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 34,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                     Padding(
@@ -182,83 +191,115 @@ class _HomeState extends State<Home> {
                                   setState(() {
                                     _loggedin = true;
                                   });
-                                  try {
-                                    final credential = await FirebaseAuth
-                                        .instance
-                                        .signInWithEmailAndPassword(
-                                            email: _emailController.text.trim(),
-                                            password: _passwordController.text)
-                                        .whenComplete(() => signing = false);
-                                  } on FirebaseAuthException catch (e) {
-                                    if (e.code == 'user-not-found') {
-                                      Fluttertoast.showToast(
-                                          msg: 'No user found for that email.',
-                                          toastLength: Toast.LENGTH_SHORT,
-                                          gravity: ToastGravity.BOTTOM,
-                                          timeInSecForIosWeb: 1,
-                                          backgroundColor: Colors.red,
-                                          textColor: Colors.white,
-                                          fontSize: 13.0);
-                                    } else if (e.code == 'wrong-password') {
-                                      Fluttertoast.showToast(
-                                          msg:
-                                              'Wrong password provided for that user.',
-                                          toastLength: Toast.LENGTH_SHORT,
-                                          gravity: ToastGravity.BOTTOM,
-                                          timeInSecForIosWeb: 1,
-                                          backgroundColor: Colors.red,
-                                          textColor: Colors.white,
-                                          fontSize: 13.0);
+
+                                  if (_emailController.text != "" ||
+                                      _passwordController.text != "") {
+                                    try {
+                                      final credential = await FirebaseAuth
+                                          .instance
+                                          .signInWithEmailAndPassword(
+                                              email:
+                                                  _emailController.text.trim(),
+                                              password:
+                                                  _passwordController.text);
+                                    } on FirebaseAuthException catch (e) {
+                                      if (e.code == 'user-not-found') {
+                                        setState(() {
+                                          signing = false;
+                                          _loggedin = false;
+                                        });
+                                        Fluttertoast.showToast(
+                                            msg: 'invalid email',
+                                            toastLength: Toast.LENGTH_SHORT,
+                                            gravity: ToastGravity.BOTTOM,
+                                            timeInSecForIosWeb: 1,
+                                            backgroundColor: Colors.red,
+                                            textColor: Colors.white,
+                                            fontSize: 13.0);
+                                      } else if (e.code == 'wrong-password') {
+                                        setState(() {
+                                          signing = false;
+                                          _loggedin = false;
+                                        });
+                                        Fluttertoast.showToast(
+                                            msg: 'Invalid password',
+                                            toastLength: Toast.LENGTH_SHORT,
+                                            gravity: ToastGravity.BOTTOM,
+                                            timeInSecForIosWeb: 1,
+                                            backgroundColor: Colors.red,
+                                            textColor: Colors.white,
+                                            fontSize: 13.0);
+                                      }
                                     }
-                                  }
-                                  final FirebaseAuth auth =
-                                      FirebaseAuth.instance;
-                                  final User? user = auth.currentUser;
-                                  final userid = user!.uid;
-                                  Map<String, dynamic> data = {};
+                                    if (signing) {
+                                      final FirebaseAuth auth =
+                                          FirebaseAuth.instance;
+                                      final User? user = auth.currentUser;
+                                      final userid = user!.uid;
+                                      Map<String, dynamic> data = {};
 
-                                  FirebaseFirestore.instance
-                                      .collection('observers')
-                                      .doc(userid)
-                                      .get()
-                                      .then(
-                                          (DocumentSnapshot documentSnapshot) {
-                                    data = documentSnapshot.data()
-                                        as Map<String, dynamic>;
+                                      FirebaseFirestore.instance
+                                          .collection('observers')
+                                          .doc(userid)
+                                          .get()
+                                          .then((DocumentSnapshot
+                                              documentSnapshot) {
+                                        data = documentSnapshot.data()
+                                            as Map<String, dynamic>;
 
-                                    setState(() {
-                                      _loggedin = signing;
-                                      context
-                                          .read<dbManager>()
-                                          .ChangeCurrentObserverDoc(
-                                              documentSnapshot);
-                                    });
+                                        setState(() {
+                                          _loggedin = false;
 
-                                    Get.off(const Start(),
-                                        arguments: data['role']);
+                                          context
+                                              .read<dbManager>()
+                                              .ChangeCurrentObserverDoc(
+                                                  documentSnapshot);
+                                          _emailController.clear();
+                                          _passwordController.clear();
 
-                                    // else if (data['role'] == 'Researcher') {
-                                    //   Get.off(ResearcherHome(),
-                                    //       arguments: data['role']);
-                                    // }
+                                          _loggedin = false;
+                                        });
+
+                                        Get.off(const Start(),
+                                            arguments: data['role']);
+
+                                        // else if (data['role'] == 'Researcher') {
+                                        //   Get.off(ResearcherHome(),
+                                        //       arguments: data['role']);
+                                        // }
+                                        // print(context.watch<ManageRoute>().User);
+                                      });
+                                    }
+
                                     // print(context.watch<ManageRoute>().User);
-                                  });
 
-                                  // print(context.watch<ManageRoute>().User);
-
-                                  //  {
-                                  //     Fluttertoast.showToast(
-                                  //         msg: "Email or Password invalid!",
-                                  //         toastLength: Toast.LENGTH_SHORT,
-                                  //         gravity: ToastGravity.BOTTOM,
-                                  //         timeInSecForIosWeb: 1,
-                                  //         backgroundColor: Colors.red,
-                                  //         textColor: Colors.white,
-                                  //         fontSize: 13.0);
-                                  //   }
-                                  // login();
+                                    //  {
+                                    //     Fluttertoast.showToast(
+                                    //         msg: "Email or Password invalid!",
+                                    //         toastLength: Toast.LENGTH_SHORT,
+                                    //         gravity: ToastGravity.BOTTOM,
+                                    //         timeInSecForIosWeb: 1,
+                                    //         backgroundColor: Colors.red,
+                                    //         textColor: Colors.white,
+                                    //         fontSize: 13.0);
+                                    //   }
+                                    // login();
+                                  } else {
+                                    setState(() {
+                                      _loggedin = false;
+                                    });
+                                    Fluttertoast.showToast(
+                                        msg:
+                                            "Please Enter Email and Password !",
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.BOTTOM,
+                                        timeInSecForIosWeb: 1,
+                                        backgroundColor: Colors.red,
+                                        textColor: Colors.white,
+                                        fontSize: 13.0);
+                                  }
                                 },
-                                child: const FittedBox(
+                                child: FittedBox(
                                   child: Text(
                                     'Sign In',
                                     style: TextStyle(

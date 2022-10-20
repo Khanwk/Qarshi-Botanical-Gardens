@@ -1,33 +1,30 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
-import 'package:qarshi_app/Observer/CreateProject.dart';
-import 'package:qarshi_app/Observer/Sepecies.dart';
-import 'package:qarshi_app/Observer/chat.dart';
-import 'package:qarshi_app/authanticate/login.dart';
-import 'package:qarshi_app/services/dbManager.dart';
-import 'package:qarshi_app/services/storage.dart';
-import 'package:sizer/sizer.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:provider/provider.dart';
+import 'package:qarshi_app/authanticate/login.dart';
+import 'package:sizer/sizer.dart';
+import '../Observer/CreateProject.dart';
+import '../Observer/Sepecies.dart';
+import '../Observer/chat.dart';
 import '../services/RouteManager.dart';
+import '../services/dbManager.dart';
+import '../services/storage.dart';
 
-class Account extends StatefulWidget {
-  const Account({Key? key}) : super(key: key);
+class OtherAccount extends StatefulWidget {
+  const OtherAccount({Key? key}) : super(key: key);
 
   @override
-  State<Account> createState() => _AccountState();
+  State<OtherAccount> createState() => _OtherAccountState();
 }
 
-class _AccountState extends State<Account> {
+class _OtherAccountState extends State<OtherAccount> {
   Future<void> _deleteCacheDir() async {
     final cacheDir = await getTemporaryDirectory();
 
@@ -65,10 +62,10 @@ class _AccountState extends State<Account> {
   Storage storage = Storage();
 
   getImage() async {
-    String id = (Provider.of<dbManager>(context, listen: false)
-                .currentobserverdoc!['uid'] +
-            ".jpg")
-        .toString();
+    String id =
+        (Provider.of<dbManager>(context, listen: false).observerdoc!['uid'] +
+                ".jpg")
+            .toString();
     print("id :: $id");
     url = await FirebaseStorage.instance
         .ref()
@@ -89,20 +86,6 @@ class _AccountState extends State<Account> {
 
     super.initState();
   }
-
-  // Future<void> init() async {
-  //   // File? imageFile = await storage.getImageFile(
-  //   //     (Provider.of<dbManager>(context, listen: false)
-  //   //             .currentobserverdoc!['uid'])
-  //   //         .toString());
-  //   // if (mounted && imageFile != null) {
-  //   //   setState(() {
-  //   //     image = imageFile;
-  //   //   });
-  //   // }
-
-  //   print(url);
-  // }
 
   showAlert(BuildContext context) {
     showDialog(
@@ -172,45 +155,30 @@ class _AccountState extends State<Account> {
       return Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
-            backgroundColor: Colors.red,
-            elevation: 0,
-            centerTitle: true,
-            title: Visibility(
-              visible: context.watch<ManageRoute>().Profile == 'ObserverAcc',
-              child: const Text(
+              backgroundColor: Colors.red,
+              elevation: 0,
+              centerTitle: true,
+              title: const Text(
                 'Observer',
                 style: TextStyle(color: Colors.white),
               ),
-              replacement: const Text(
-                'Profile',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-            actions: [
-              Visibility(
-                visible: context.watch<ManageRoute>().Profile != 'ObserverAcc',
-                child: IconButton(
-                    onPressed: () {
-                      context.read<ManageRoute>().NoObservationLIst([]);
-                      context.read<ManageRoute>().ObserverLIst([]);
-                      _deleteAppDir();
-                      logout();
-                    },
-                    icon: const Icon(Icons.logout)),
-                replacement: IconButton(
-                    onPressed: () {
-                      Get.to(const ChatPage(),
-                          arguments:
-                              Provider.of<dbManager>(context, listen: false)
-                                  .observerdoc!['uid']);
-                    },
-                    icon: const Icon(
-                      Icons.message,
-                      color: Colors.white,
-                    )),
-              )
-            ],
-          ),
+              actions: [
+                Visibility(
+                  visible: context.watch<dbManager>().observerdoc!['uid'] !=
+                      context.watch<dbManager>().currentobserverdoc!['uid'],
+                  child: IconButton(
+                      onPressed: () {
+                        Get.to(const ChatPage(),
+                            arguments:
+                                Provider.of<dbManager>(context, listen: false)
+                                    .observerdoc!['uid']);
+                      },
+                      icon: const Icon(
+                        Icons.message,
+                        color: Colors.white,
+                      )),
+                ),
+              ]),
           body: SafeArea(
             child: GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
@@ -245,14 +213,13 @@ class _AccountState extends State<Account> {
                                       top: MediaQuery.of(context).size.height *
                                           0.05),
                                   child: Text(
-                                    Provider.of<dbManager>(context,
-                                            listen: false)
-                                        .currentobserverdoc!['name']
-                                    // context
-                                    //     .watch<dbManager>()
-                                    //     .observerdoc!['name']
-                                    //     .toString()
-                                    ,
+                                    // Provider.of<dbManager>(context,
+                                    //         listen: false)
+                                    //     .currentobserverdoc!['name']
+                                    context
+                                        .watch<dbManager>()
+                                        .observerdoc!['name']
+                                        .toString(),
                                     style: TextStyle(
                                         fontSize: 20, color: Colors.white),
                                   ),
@@ -277,37 +244,6 @@ class _AccountState extends State<Account> {
                                   fit: BoxFit.cover,
                                 ),
                               ),
-                              // FutureBuilder(
-                              //   future: FirebaseStorage.instance
-                              //       .ref()
-                              //       .child('hello.jpg')
-                              //       .getDownloadURL(),
-                              //   builder: (BuildContext context,
-                              //       AsyncSnapshot<String> snapshot) {
-                              //     if (snapshot.connectionState ==
-                              //             ConnectionState.done &&
-                              //         snapshot.hasData) {
-                              //       Container(
-                              //         width: 120,
-                              //         height: 120,
-                              //         clipBehavior: Clip.antiAlias,
-                              //         decoration: const BoxDecoration(
-                              //           shape: BoxShape.circle,
-                              //         ),
-                              //         child: Image.network(
-                              //           snapshot.data!,
-                              //           fit: BoxFit.cover,
-                              //         ),
-                              //       );
-                              //     }
-                              //     if (snapshot.connectionState ==
-                              //         ConnectionState.waiting) {
-                              //       return const CircularProgressIndicator();
-                              //     }
-                              //     return
-                              //   },
-
-                              // FutureBuilder),
                             ),
                             Align(
                               alignment: const AlignmentDirectional(0.25, 1),
@@ -361,7 +297,7 @@ class _AccountState extends State<Account> {
                   ),
                   Expanded(
                     child: DefaultTabController(
-                      length: 3,
+                      length: 2,
                       initialIndex: 0,
                       child: Column(
                         children: [
@@ -370,28 +306,18 @@ class _AccountState extends State<Account> {
                             labelColor: Colors.red,
                             unselectedLabelColor: Colors.grey,
                             indicatorColor: Colors.red,
-                            // labelColor: FlutterFlowTheme.of(context).primaryColor,
-                            // labelStyle: FlutterFlowTheme.of(context).bodyText1,
-                            // indicatorColor:
-                            //     FlutterFlowTheme.of(context).secondaryColor,
+
                             tabs: [
                               Tab(
                                 child: Text(
                                   'Observations',
                                 ),
-                                // text: 'Observations',
                               ),
                               Tab(
                                 child: Text(
                                   'Projects',
                                 ),
                                 // text: 'Projects',
-                              ),
-                              Tab(
-                                child: Text(
-                                  'Edit Profile',
-                                ),
-                                // text: 'Edit Profile',
                               ),
                             ],
                           ),
@@ -437,8 +363,6 @@ class _AccountState extends State<Account> {
                                                     );
                                                   } else {
                                                     return ListView.builder(
-                                                        physics:
-                                                            NeverScrollableScrollPhysics(),
                                                         shrinkWrap: true,
                                                         itemCount:
                                                             Projectssnapshot
@@ -526,10 +450,6 @@ class _AccountState extends State<Account> {
                                                                                 )),
                                                                           ),
                                                                         ),
-                                                                        // child: Image(
-                                                                        //   image: AssetImage('images/plant.jpg'),
-                                                                        //   fit: BoxFit.cover,
-                                                                        // ),
                                                                       ), // Ink.image
                                                                       Padding(
                                                                         padding:
@@ -550,17 +470,6 @@ class _AccountState extends State<Account> {
                                                                           ),
                                                                         ),
                                                                       ),
-                                                                      // Positioned(
-                                                                      //   right: 5,
-                                                                      //   child: Text(
-                                                                      //     '* ',
-                                                                      //     style: TextStyle(
-                                                                      //       fontWeight: FontWeight.bold,
-                                                                      //       color: Color(0xffcb1212),
-                                                                      //       fontSize: 40,
-                                                                      //     ), // TextStyle
-                                                                      //   ),
-                                                                      // ),
 
                                                                       Align(
                                                                         alignment:
@@ -594,32 +503,9 @@ class _AccountState extends State<Account> {
                                                                           ),
                                                                         ),
                                                                       ),
-                                                                      // Padding(
-                                                                      //   padding: const EdgeInsets.only(right: 281, top: 5),
-                                                                      //   child: Text(
-                                                                      //     '  Date ',
-                                                                      //     style: TextStyle(fontSize: 16),
-                                                                      //   ),
-                                                                      // ),
-                                                                      //
-                                                                      // Text
                                                                     ])),
                                                           );
                                                         });
-                                                    // Card(
-                                                    //   child: ListTile(
-                                                    //     onTap: (() {
-                                                    //       Get.to(const Sepecies());
-                                                    //       context
-                                                    //           .read<ManageRoute>()
-                                                    //           .ChangeSepecies('observation');
-                                                    //     }),
-                                                    //     // leading: Text(book[index].rank.toString()),
-                                                    //     title: Text(Projectid),
-                                                    //     // trailing: Text(book[index].nObservations.toString()),
-                                                    //   ),
-                                                    // );
-
                                                   }
                                                 });
                                           },
@@ -663,8 +549,6 @@ class _AccountState extends State<Account> {
                                                     );
                                                   } else {
                                                     return ListView.builder(
-                                                      physics:
-                                                          NeverScrollableScrollPhysics(),
                                                       shrinkWrap: true,
                                                       itemCount:
                                                           Projectssnapshot.data!
@@ -724,7 +608,6 @@ class _AccountState extends State<Account> {
                                         );
                                       }
                                     }),
-                                Container(),
                               ],
                             ),
                           ),
@@ -736,201 +619,6 @@ class _AccountState extends State<Account> {
               ),
             ),
           ));
-      //       appBar: AppBar(
-      //         backgroundColor: Colors.red,
-      //         elevation: 0,
-      //         centerTitle: true,
-      //         title: Visibility(
-      //           visible: context.watch<ManageRoute>().Profile == 'ObserverAcc',
-      //           child: const Text(
-      //             'Observer',
-      //             style: TextStyle(color: Colors.white),
-      //           ),
-      //           replacement: const Text(
-      //             'Profile',
-      //             style: TextStyle(color: Colors.white),
-      //           ),
-      //         ),
-      //         actions: [
-      //           Visibility(
-      //               visible:
-      //                   context.watch<ManageRoute>().Profile != 'ObserverAcc',
-      //               child: IconButton(
-      //                   onPressed: () {
-      //                     context.read<ManageRoute>().NoObservationLIst([]);
-      //                     context.read<ManageRoute>().ObserverLIst([]);
-      //                     _deleteAppDir();
-      //                     logout();
-      //                   },
-      //                   icon: const Icon(Icons.logout)))
-      //         ],
-      //       ),
-      //       body: Column(children: [
-      //         Stack(
-      //   fit: StackFit.expand,
-      //   children: [
-      //     Container(
-      //       margin: const EdgeInsets.only(bottom: 50),
-      //       decoration: const BoxDecoration(
-      //           gradient: LinearGradient(
-      //               begin: Alignment.bottomCenter,
-      //               end: Alignment.topCenter,
-      //               colors: [Color(0xff0043ba), Color(0xff006df1)]),
-      //           borderRadius: BorderRadius.only(
-      //             bottomLeft: Radius.circular(50),
-      //             bottomRight: Radius.circular(50),
-      //           )),
-      //     ),
-      //     Align(
-      //       alignment: Alignment.bottomCenter,
-      //       child: SizedBox(
-      //         width: 150,
-      //         height: 150,
-      //         child: Stack(
-      //           fit: StackFit.expand,
-      //           children: [
-      //             Container(
-      //               decoration: const BoxDecoration(
-      //                 color: Colors.black,
-      //                 shape: BoxShape.circle,
-      //                 image: DecorationImage(
-      //                     fit: BoxFit.cover,
-      //                     image: NetworkImage(
-      //                         'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80')),
-      //               ),
-      //             ),
-      //             Positioned(
-      //               bottom: 0,
-      //               right: 0,
-      //               child: CircleAvatar(
-      //                 radius: 20,
-      //                 backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      //                 child: Container(
-      //                   margin: const EdgeInsets.all(8.0),
-      //                   decoration: const BoxDecoration(
-      //                       color: Colors.green, shape: BoxShape.circle),
-      //                 ),
-      //               ),
-      //             ),
-      //           ],
-      //         ),
-      //       ),
-      //     )
-      //   ],
-      // ),
-      //         Expanded(
-      //           child: SingleChildScrollView(
-      //             child: Column(children: [
-      //               Visibility(
-      //                 visible:
-      //                     'ObserverAcc' != context.watch<ManageRoute>().Profile,
-      //                 child: ExpansionTile(
-      //                   title: const Text('Personal Setting'),
-      //                   subtitle: const Text('Change your personal settings.'),
-      //                   children: <Widget>[
-      //                     const TextField(
-      //                       decoration:
-      //                           InputDecoration(hintText: 'Enter your Name'),
-      //                     ),
-      //                     const TextField(
-      //                       decoration:
-      //                           InputDecoration(hintText: 'Enter your Email'),
-      //                     ),
-      //                     const TextField(
-      //                       decoration:
-      //                           InputDecoration(hintText: 'Enter your Password'),
-      //                     ),
-      //                     const TextField(
-      //                       decoration: InputDecoration(
-      //                           hintText: 'Enter Confirm Password'),
-      //                     ),
-      //                     ElevatedButton(
-      //                       onPressed: () {},
-      //                       child: const Text('Save Changes'),
-      //                     )
-      //                   ],
-      //                 ),
-      //               ),
-      //               ExpansionTile(
-      //                 title: const Text('Observattions'),
-      //                 // subtitle: Text('Ob'),
-      //                 children: <Widget>[
-      //                   SizedBox(
-      //                     height: MediaQuery.of(context).size.height * 0.2,
-      //                     child: ListView.builder(
-      //                         itemCount: 3,
-      //                         itemBuilder: (context, index) {
-      //                           return Card(
-      //                             child: ListTile(
-      //                               onTap: () => Get.to(const Sepecies(),
-      //                                   arguments: ['Observe', 4]),
-      //                               title: Text('Observation $index'),
-      //                             ),
-      //                           );
-      //                         }),
-      //                   )
-      //                 ],
-      //               ),
-      //               ExpansionTile(
-      //                 title: const Text('Projects'),
-      //                 // subtitle: Text('Ob'),
-      //                 children: <Widget>[
-      //                   StreamBuilder(
-      //                       stream: FirebaseFirestore.instance
-      //                           .collection('observers')
-      //                           .snapshots(),
-      //                       builder: (BuildContext context,
-      //                           AsyncSnapshot<QuerySnapshot> snapshot) {
-      //                         if (!snapshot.hasData) {
-      //                           return const Center(
-      //                             child: CircularProgressIndicator(),
-      //                           );
-      //                         } else {
-      //                           return ListView.builder(
-      //                               itemCount: snapshot.data!.docs.length,
-      //                               itemBuilder: (context, index) {
-      //                                 String id = snapshot.data!.docs[index].id;
-      //                                 return StreamBuilder(
-      //                                     stream: FirebaseFirestore.instance
-      //                                         .collection('observers')
-      //                                         .doc(id)
-      //                                         .collection('projects')
-      //                                         .snapshots(),
-      //                                     builder: (BuildContext context,
-      //                                         AsyncSnapshot<QuerySnapshot>
-      //                                             Projectssnapshot) {
-      //                                       if (!snapshot.hasData) {
-      //                                         return const Center(
-      //                                           child:
-      //                                               CircularProgressIndicator(),
-      //                                         );
-      //                                       } else {
-      //                                         return Card(
-      //                                           child: ListTile(
-      //                                             onTap: () {
-      //                                               Get.to(const Project());
-      //                                               context
-      //                                                   .read<ManageRoute>()
-      //                                                   .ChangeProject(
-      //                                                       'ProjectShow');
-      //                                             },
-      //                                             title: Text('Project $index'),
-      //                                           ),
-      //                                         );
-      //                                       }
-      //                                     });
-      //                               });
-      //                         }
-      //                       })
-      //                 ],
-      //               ),
-      //             ]),
-      //           ),
-      //         ),
-      //       ]),
-      //     );
-      //   }),
-      // );
     }));
   }
 }

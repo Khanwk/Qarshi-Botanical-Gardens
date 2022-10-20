@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:qarshi_app/services/dbManager.dart';
+import 'package:intl/intl.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({Key? key}) : super(key: key);
@@ -95,6 +96,11 @@ class _ChatPageState extends State<ChatPage> {
                         reverse: true,
                         physics: BouncingScrollPhysics(),
                         itemBuilder: (context, index) {
+                          final Timestamp timestamp =
+                              snapshot.data!.docs[index]['date'] as Timestamp;
+                          final DateTime dateTime = timestamp.toDate();
+                          final dateString =
+                              DateFormat('K:mm (dd-MM)').format(dateTime);
                           return Container(
                             padding: EdgeInsets.only(
                                 left: 14, right: 14, top: 10, bottom: 10),
@@ -106,21 +112,39 @@ class _ChatPageState extends State<ChatPage> {
                                           .currentobserverdoc!['uid']
                                   ? Alignment.topLeft
                                   : Alignment.topRight),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: (snapshot.data!.docs[index]
-                                              ['senderid'] !=
-                                          context
-                                              .watch<dbManager>()
-                                              .currentobserverdoc!['uid']
-                                      ? Colors.grey[300]
-                                      : Colors.red[200]),
-                                ),
-                                padding: EdgeInsets.all(16),
-                                child: Text(
-                                  snapshot.data!.docs[index]['message'],
-                                  style: TextStyle(fontSize: 15),
+                              child: GestureDetector(
+                                onLongPress: () {
+                                  PopupMenuButton(
+                                    child: FlutterLogo(),
+                                    itemBuilder: (context) {
+                                      return <PopupMenuItem>[
+                                        new PopupMenuItem(child: Text('Delete'))
+                                      ];
+                                    },
+                                  );
+                                },
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        color: (snapshot.data!.docs[index]
+                                                    ['senderid'] !=
+                                                context
+                                                    .watch<dbManager>()
+                                                    .currentobserverdoc!['uid']
+                                            ? Colors.grey[300]
+                                            : Colors.red[200]),
+                                      ),
+                                      padding: EdgeInsets.all(8),
+                                      child: Text(
+                                        snapshot.data!.docs[index]['message'],
+                                        style: TextStyle(fontSize: 15),
+                                      ),
+                                    ),
+                                    Text(dateString,
+                                        style: TextStyle(fontSize: 10))
+                                  ],
                                 ),
                               ),
                             ),

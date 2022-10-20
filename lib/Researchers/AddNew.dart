@@ -482,7 +482,7 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                                   .collection('observers')
                                   .doc(userid)
                                   .collection('observations')
-                                  .doc(_BotanicalName.text)
+                                  .doc()
                                   .set({
                                 'BotanicalName': _BotanicalName.text,
                                 'LocalName': _LocalName.text,
@@ -510,6 +510,7 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                                 'Soil': _Soil.text,
                                 'Water': _Water.text,
                                 'Propagation': _Propagation.text,
+                                'Date': DateTime.now()
                               });
 
                               setState(() {

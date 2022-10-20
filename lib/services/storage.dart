@@ -18,7 +18,26 @@ class Storage {
     }
   }
 
+  Future<void> uploadTempFile(
+    String filePath,
+    String fileName,
+  ) async {
+    File file = File(filePath);
+
+    try {
+      await storage.ref('TempScan/$fileName ').putFile(file);
+    } on firebase_core.FirebaseException catch (e) {
+      print(e);
+    }
+  }
+
   Future<String> getImageFile(String fileName) async {
+    String downloadUrl = await storage.ref().child(fileName).getDownloadURL();
+    // print(downloadUrl);
+    return downloadUrl;
+  }
+
+  Future<String> getTempFile(String fileName) async {
     String downloadUrl = await storage.ref().child(fileName).getDownloadURL();
     // print(downloadUrl);
     return downloadUrl;

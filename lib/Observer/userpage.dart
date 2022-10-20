@@ -8,9 +8,11 @@ import 'package:provider/provider.dart';
 import 'package:qarshi_app/Observer/afterimage.dart';
 import 'package:qarshi_app/services/HomePage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:qarshi_app/services/dbManager.dart';
 import 'package:sizer/sizer.dart';
 
 import '../services/RouteManager.dart';
+import '../services/storage.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({Key? key}) : super(key: key);
@@ -31,6 +33,14 @@ class _UserPageState extends State<UserPage> {
       if (image == null) return;
 
       final imageTemp = File(image.path);
+      Storage()
+          .uploadTempFile(
+              imageTemp.path,
+              (Provider.of<dbManager>(context, listen: false)
+                          .currentobserverdoc!['uid'] +
+                      ".jpg")
+                  .toString())
+          .then((value) => print(imageTemp.path));
       Get.to(const Results(), arguments: imageTemp);
       setState(() {
         this.image = imageTemp;

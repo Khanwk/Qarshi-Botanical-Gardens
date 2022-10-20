@@ -97,7 +97,16 @@ class _ProjectAddState extends State<ProjectAdd> {
                           .map((QueryDocumentSnapshot data) {
                         String name = data['name'];
                         String uid = data['uid'];
+                        List member = context
+                            .watch<dbManager>()
+                            .projectdoc!['memberList'];
                         List RequestList = data['ProjectRequest'];
+                        String senderName = context
+                            .watch<dbManager>()
+                            .currentobserverdoc!['name'];
+                        String senderuid = context
+                            .watch<dbManager>()
+                            .currentobserverdoc!['uid'];
                         return Card(
                           child: ListTile(
                               leading: const Image(
@@ -118,9 +127,10 @@ class _ProjectAddState extends State<ProjectAdd> {
                                     // )
                                   ]),
                               trailing: Visibility(
-                                visible: !RequestList.contains(valid[0]),
+                                visible: !RequestList.contains(valid[0]) &&
+                                    !member.contains(name),
                                 child: IconButton(
-                                  icon: Icon(Icons.person_add),
+                                  icon: const Icon(Icons.person_add),
                                   onPressed: (() {
                                     // List l = valid[0];
                                     FirebaseFirestore.instance
@@ -140,7 +150,8 @@ class _ProjectAddState extends State<ProjectAdd> {
                                           "I would like you to join me on this project",
                                       "request": "",
                                       "ProjectName": valid[0].toString(),
-                                      "observername": name
+                                      "observername": senderName,
+                                      "senderUid": senderuid
                                     });
                                   }),
                                 ),
