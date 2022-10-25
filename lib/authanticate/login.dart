@@ -8,7 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:qarshi_app/services/api_services.dart';
+import 'package:qarshi_app/authanticate/forgot_p.dart';
 import 'package:qarshi_app/services/dbManager.dart';
 
 var _passwordVisible = true;
@@ -103,17 +103,12 @@ class _HomeState extends State<Home> {
                       padding: EdgeInsets.only(
                         top: MediaQuery.of(context).size.height * 0.11,
                       ),
-                      child: InkWell(
-                        onTap: () {
-                          ApiServices.fetchAlbum();
-                        },
-                        child: const Text(
-                          'SIGN IN',
-                          style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 34,
-                              fontWeight: FontWeight.bold),
-                        ),
+                      child: const Text(
+                        'SIGN IN',
+                        style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 34,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
                     Padding(
@@ -175,7 +170,13 @@ class _HomeState extends State<Home> {
                                     color: Colors.red,
                                   ),
                                   recognizer: TapGestureRecognizer()
-                                    ..onTap = () {}),
+                                    ..onTap = () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ForgotPasswordPage()));
+                                    }),
                             ],
                           ),
                         )),

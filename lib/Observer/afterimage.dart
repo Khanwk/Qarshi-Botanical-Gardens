@@ -2,10 +2,10 @@ import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:qarshi_app/Observer/Sepecies.dart';
 import 'package:qarshi_app/services/dbManager.dart';
 import 'package:sizer/sizer.dart';
 import 'package:get/get.dart';
+import 'package:qarshi_app/services/api_services.dart';
 
 class Results extends StatefulWidget {
   const Results({Key? key}) : super(key: key);
@@ -17,6 +17,9 @@ class Results extends StatefulWidget {
 class _ResultsState extends State<Results> {
   File image = Get.arguments;
   String url = "";
+  String url1 = "";
+  late var result;
+  ApiServices apiServices = ApiServices();
   List plantName = ['Rose', 'Lavender', 'Mapel'];
   List plantProb = ['91.1 %', '92 %', '99 %'];
   // List<File> plantImage = [File.image, File.image];
@@ -30,15 +33,22 @@ class _ResultsState extends State<Results> {
         .ref()
         .child('TempScan/$id ')
         .getDownloadURL();
-
-    print('url :$url');
+    url1 = url.substring(8);
+    print("////////////////////////////////////////////////");
+    print(image.path);
     setState(() {});
+  }
+
+  Future getResult() async {
+    return await apiServices.fetchAlbum(url1);
   }
 
   @override
   void initState() {
     // init();
     getImage();
+    getResult();
+
 // no need of the file extension, the name will do fine.
 
     // url = await ref.getDownloadURL();
@@ -79,55 +89,76 @@ class _ResultsState extends State<Results> {
             ),
             SizedBox(
                 height: MediaQuery.of(context).size.height * 0.65,
-                child: ListView.builder(
-                    itemCount: 10,
-                    itemBuilder: (context, index) {
-                      return Card(
-                          clipBehavior: Clip.antiAlias,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ), // RoundedRectangleBorder
-                          child: Column(children: [
-                            Stack(
-                              children: [
-                                SizedBox(
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.2,
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.9,
-                                  child: image == null
-                                      ? const Text('No image to show')
-                                      : Image.file(
-                                          image,
-                                          fit: BoxFit.cover,
-                                        ),
-                                ), // Ink.image
-                              ],
-                            ),
-                            Column(
-                              children: const [
-                                Padding(
-                                  padding: EdgeInsets.only(right: 216, top: 5),
-                                  child: Text(
-                                    ' Plant Name ',
-                                    style: TextStyle(fontSize: 16),
+                child: FutureBuilder(
+                  future: apiServices.fetchAlbum(url1),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return ListView.builder(
+                          itemCount: apiServices.data.length,
+                          itemBuilder: (context, index) {
+                            return Card(
+                                clipBehavior: Clip.antiAlias,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                ), // RoundedRectangleBorder
+                                child: Column(children: [
+                                  Stack(
+                                    children: [
+                                      SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.2,
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.9,
+                                        child: image == null
+                                            ? Center(
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              )
+                                            : Image.file(
+                                                image,
+                                                fit: BoxFit.cover,
+                                              ),
+                                      ), // Ink.image
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.only(right: 260, bottom: 3),
-                              child: Text(
-                                '  78.2% ',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            ),
+                                  Column(
+                                    children: [
+                                      Padding(
+                                        padding:
+                                            EdgeInsets.only(right: 216, top: 5),
+                                        child: Text(
+                                          apiServices.data["results"][index]
+                                                  ["species"]["scientificName"]
+                                              .toString(),
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding:
+                                        EdgeInsets.only(right: 260, bottom: 3),
+                                    child: Text(
+                                      apiServices.data["results"][index]
+                                              ["score"]
+                                          .toString(),
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  ),
 
-                            // Text
-                          ]));
-                    } // Stack
+                                  // Text
+                                ]));
+                          } // Stack
 
-                    ) // Card
+                          );
+                    } else {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                  },
+                )
+                // Card
 
                 // Card(
                 //   child: ListTile(
