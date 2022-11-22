@@ -1,13 +1,16 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:qarshi_app/authanticate/SignupBreakup.dart';
 import 'package:qarshi_app/authanticate/signup.dart';
 import 'package:qarshi_app/Observer/start.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:qarshi_app/authanticate/forgot_p.dart';
 import 'package:qarshi_app/services/dbManager.dart';
 
@@ -210,7 +213,7 @@ class _HomeState extends State<Home> {
                                           _loggedin = false;
                                         });
                                         Fluttertoast.showToast(
-                                            msg: 'invalid email',
+                                            msg: 'Invalid Email',
                                             toastLength: Toast.LENGTH_SHORT,
                                             gravity: ToastGravity.BOTTOM,
                                             timeInSecForIosWeb: 1,
@@ -308,7 +311,7 @@ class _HomeState extends State<Home> {
                                   ),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
+                                    primary: Colors.red,
                                     elevation: 3,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(30.0),
@@ -329,7 +332,7 @@ class _HomeState extends State<Home> {
                       child:
                           const FittedBox(child: Text('Sign In with Google')),
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
+                          primary: Colors.red,
                           elevation: 3,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30.0),
@@ -375,7 +378,7 @@ class _HomeState extends State<Home> {
                                         style: linkStyle,
                                         recognizer: TapGestureRecognizer()
                                           ..onTap = () {
-                                            Get.to(() => const SignUp());
+                                            Get.to(() => const Email());
                                           }),
                                   ],
                                 ),

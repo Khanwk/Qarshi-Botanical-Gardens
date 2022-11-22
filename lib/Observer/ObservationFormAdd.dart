@@ -7,11 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:get/get.dart';
-import 'package:provider/provider.dart';
-import 'package:qarshi_app/Observer/CreateProject.dart';
-import 'package:qarshi_app/services/RouteManager.dart';
-import 'package:sizer/sizer.dart';
 
 class CameraPage extends StatefulWidget {
   const CameraPage({Key? key}) : super(key: key);
@@ -179,208 +174,222 @@ class _CameraPageState extends State<CameraPage> {
     //     ),
     //   );
     // }
-    return Sizer(builder: (context, orientation, deviceType) {
-      return Scaffold(
-        resizeToAvoidBottomInset: false,
-        backgroundColor: Colors.white,
-        body: Padding(
-          padding:
-              EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.02),
-          child: (Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  children: [
-                    Row(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.only(
-                              left: MediaQuery.of(context).size.width * 0.08,
-                              top: MediaQuery.of(context).size.height * 0.02),
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.5,
-                            child: const TextField(
-                              decoration: InputDecoration(
-                                hintText: 'Name of Plant',
-                              ),
+
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.white,
+      body: Padding(
+        padding:
+            EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.02),
+        child: (Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                children: [
+                  Row(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(
+                            left: MediaQuery.of(context).size.width * 0.08,
+                            top: MediaQuery.of(context).size.height * 0.02),
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.5,
+                          child: const TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Name of Plant',
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.1,
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(
-                              right: MediaQuery.of(context).size.width * 0.08,
-                              top: MediaQuery.of(context).size.height * 0.02),
-                          child: SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.22,
-                              height: MediaQuery.of(context).size.height * 0.1,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  _showActionSheet(context);
-                                },
-                                child: Column(
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                          top: MediaQuery.of(context)
-                                                  .size
-                                                  .height *
-                                              0.02),
-                                      child: const FittedBox(
-                                        child: Icon(
-                                          Icons.add,
-                                          color: Colors.black,
-                                          // size: 14.sp,
-                                        ),
+                      ),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.1,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(
+                            right: MediaQuery.of(context).size.width * 0.08,
+                            top: MediaQuery.of(context).size.height * 0.02),
+                        child: SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.22,
+                            height: MediaQuery.of(context).size.height * 0.1,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                _showActionSheet(context);
+                              },
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        top:
+                                            MediaQuery.of(context).size.height *
+                                                0.02),
+                                    child: const FittedBox(
+                                      child: Icon(
+                                        Icons.add,
+                                        color: Colors.black,
+                                        // size: 14.sp,
                                       ),
                                     ),
-                                    const FittedBox(
-                                      child: Text(
-                                        'Add Image',
-                                        style: TextStyle(
-                                            color: Colors.grey, fontSize: 14),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(30),
-                                        side: const BorderSide(
-                                            width: 3, color: Colors.grey))),
-                              )),
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.02,
-                    ),
-                    CupertinoFormSection(
-                        header: const Text('Description'),
-                        children: [
-                          CupertinoTextFormFieldRow(
-                            prefix: const Icon(Icons.notes_outlined),
-                            // placeholder: 'Enter Description',
-                            validator: (String? value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter a value';
-                              }
-                              return null;
-                            },
-                          ),
-                          // CupertinoFormRow(
-                          //   child: ElevatedButton(
-                          //       child: const Icon(Icons.my_location),
-                          //       onPressed: () async {
-                          //         Position position = await _determinePosition();
-                          //         GetAddressFromLatLong(position);
-                          //       }),
-                          // ),
-                          // Row(
-                          //   children: [
-                          //     CupertinoButton(
-                          //         child: const Icon(Icons.my_location),
-                          //         onPressed: () async {
-                          //           Position position = await _determinePosition();
-                          //           debugPrint('${position.latitude}');
-                          //           location =
-                          //               'lat: ${position.latitude},long: ${position.longitude}';
-                          //           setState(() {});
-                          //         }),
-                          //   ],
-                          // ),
-
-                          CupertinoFormRow(
-                            child: CupertinoSearchTextField(
-                                prefixIcon: const Icon(
-                                  Icons.location_on,
-                                  color: Colors.black,
-                                ),
-                                suffixIcon: const Icon(
-                                  Icons.my_location,
-                                  color: Colors.black,
-                                ),
-                                controller: _textController,
-                                placeholder: ' Location',
-                                backgroundColor: Colors.white,
-                                // itemSize: 50,
-                                suffixMode: OverlayVisibilityMode.notEditing,
-                                onSuffixTap: () async {
-                                  Position position =
-                                      await _determinePosition();
-                                  GetAddressFromLatLong(position);
-                                }),
-                          ),
-
-                          // CupertinoTextFormFieldRow(
-                          //   prefix: const Icon(Icons.notes_outlined),
-                          //   placeholder: 'Enter Description',
-                          //   validator: (String? value) {
-                          //     if (value == null || value.isEmpty) {
-                          //       return 'Please enter a value';
-                          //     }
-                          //     return null;
-                          //   },
-                          // ),
-                          CupertinoFormRow(
-                            prefix: const Icon(Icons.date_range),
-                            child: Row(
-                              children: [
-                                CupertinoButton(
-                                    // Display a CupertinoDatePicker in dateTime picker mode.
-                                    onPressed: () => _showDialog(
-                                          CupertinoDatePicker(
-                                            initialDateTime: dateTime,
-                                            // This is called when the user changes the dateTime.
-                                            onDateTimeChanged:
-                                                (DateTime newDateTime) {
-                                              setState(
-                                                  () => dateTime = newDateTime);
-                                            },
-                                          ),
-                                        ),
+                                  ),
+                                  const FittedBox(
                                     child: Text(
-                                      '${dateTime.month}-${dateTime.day}-${dateTime.year} ${dateTime.hour}:${dateTime.minute}',
-                                      style: const TextStyle(
-                                          fontSize: 18.0, color: Colors.black),
-                                    )),
-                              ],
-                            ),
-                          ),
-                        ]),
-                    const Divider(
-                      thickness: 2,
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.02,
-                    ),
-                    SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.02,
-                        child: const Text('Or')),
-                    SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.045,
-                        // child: TextButton(
-                        //     onPressed: () {
-                        //       Get.to(const Project());
-                        //       context
-                        //           .read<ManageRoute>()
-                        //           .ChangeProject('project');
-                        //     },
-                        child: const Text('Create Project')
-                        //  ),
-                        )
-                  ],
-                ),
+                                      'Add Image',
+                                      style: TextStyle(
+                                          color: Colors.grey, fontSize: 14),
+                                    ),
+                                  )
+                                ],
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                  primary: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      side: const BorderSide(
+                                          width: 3, color: Colors.grey))),
+                            )),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.02,
+                  ),
+                  CupertinoFormSection(
+                      header: const Text('Description'),
+                      children: [
+                        CupertinoTextFormFieldRow(
+                          prefix: const Icon(Icons.notes_outlined),
+                          // placeholder: 'Enter Description',
+                          validator: (String? value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a value';
+                            }
+                            return null;
+                          },
+                        ),
+                        // CupertinoFormRow(
+                        //   child: ElevatedButton(
+                        //       child: const Icon(Icons.my_location),
+                        //       onPressed: () async {
+                        //         Position position = await _determinePosition();
+                        //         GetAddressFromLatLong(position);
+                        //       }),
+                        // ),
+                        // Row(
+                        //   children: [
+                        //     CupertinoButton(
+                        //         child: const Icon(Icons.my_location),
+                        //         onPressed: () async {
+                        //           Position position = await _determinePosition();
+                        //           debugPrint('${position.latitude}');
+                        //           location =
+                        //               'lat: ${position.latitude},long: ${position.longitude}';
+                        //           setState(() {});
+                        //         }),
+                        //   ],
+                        // ),
 
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Row(
-                    children: [
-                      SizedBox(
+                        CupertinoFormRow(
+                          child: CupertinoSearchTextField(
+                              prefixIcon: const Icon(
+                                Icons.location_on,
+                                color: Colors.black,
+                              ),
+                              suffixIcon: const Icon(
+                                Icons.my_location,
+                                color: Colors.black,
+                              ),
+                              controller: _textController,
+                              placeholder: ' Location',
+                              backgroundColor: Colors.white,
+                              // itemSize: 50,
+                              suffixMode: OverlayVisibilityMode.notEditing,
+                              onSuffixTap: () async {
+                                Position position = await _determinePosition();
+                                GetAddressFromLatLong(position);
+                              }),
+                        ),
+
+                        // CupertinoTextFormFieldRow(
+                        //   prefix: const Icon(Icons.notes_outlined),
+                        //   placeholder: 'Enter Description',
+                        //   validator: (String? value) {
+                        //     if (value == null || value.isEmpty) {
+                        //       return 'Please enter a value';
+                        //     }
+                        //     return null;
+                        //   },
+                        // ),
+                        CupertinoFormRow(
+                          prefix: const Icon(Icons.date_range),
+                          child: Row(
+                            children: [
+                              CupertinoButton(
+                                  // Display a CupertinoDatePicker in dateTime picker mode.
+                                  onPressed: () => _showDialog(
+                                        CupertinoDatePicker(
+                                          initialDateTime: dateTime,
+                                          // This is called when the user changes the dateTime.
+                                          onDateTimeChanged:
+                                              (DateTime newDateTime) {
+                                            setState(
+                                                () => dateTime = newDateTime);
+                                          },
+                                        ),
+                                      ),
+                                  child: Text(
+                                    '${dateTime.month}-${dateTime.day}-${dateTime.year} ${dateTime.hour}:${dateTime.minute}',
+                                    style: const TextStyle(
+                                        fontSize: 18.0, color: Colors.black),
+                                  )),
+                            ],
+                          ),
+                        ),
+                      ]),
+                  const Divider(
+                    thickness: 2,
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.02,
+                  ),
+                  SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.02,
+                      child: const Text('Or')),
+                  SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.045,
+                      // child: TextButton(
+                      //     onPressed: () {
+                      //       Get.to(const Project());
+                      //       context
+                      //           .read<ManageRoute>()
+                      //           .ChangeProject('project');
+                      //     },
+                      child: const Text('Create Project')
+                      //  ),
+                      )
+                ],
+              ),
+
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.5,
+                      height: MediaQuery.of(context).size.height * 0.07,
+                      child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              image = null;
+                            });
+                          },
+                          child: const Icon(
+                            Icons.done,
+                            size: 45,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                              primary: Colors.lightGreen.shade200)),
+                    ),
+                    SizedBox(
                         width: MediaQuery.of(context).size.width * 0.5,
                         height: MediaQuery.of(context).size.height * 0.07,
                         child: ElevatedButton(
@@ -390,72 +399,55 @@ class _CameraPageState extends State<CameraPage> {
                               });
                             },
                             child: const Icon(
-                              Icons.done,
+                              Icons.cancel,
                               size: 45,
                             ),
                             style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.lightGreen.shade200)),
-                      ),
-                      SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.5,
-                          height: MediaQuery.of(context).size.height * 0.07,
-                          child: ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  image = null;
-                                });
-                              },
-                              child: const Icon(
-                                Icons.cancel,
-                                size: 45,
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red.shade200))),
-                    ],
-                  ),
+                                primary: Colors.red.shade200))),
+                  ],
                 ),
-                // Center(
-                //   child: SizedBox(
-                //     height: MediaQuery.of(context).size.height * 0.76,
-                //     width: MediaQuery.of(context).size.width,
-                //     child: CameraPreview(controller),
-                //   ),
-                // ),
-                // FloatingActionButton(
-                //   child: const Icon(Icons.camera),
-                //   onPressed: () async {
-                //     pictureFile = await controller.takePicture();
-                //     setState(() {});
-                //   },
-                // ),
-                // if (pictureFile != null)
-                //   Image.network(pictureFile!.path, height: 200),
-              ])),
-        ),
-      );
+              ),
+              // Center(
+              //   child: SizedBox(
+              //     height: MediaQuery.of(context).size.height * 0.76,
+              //     width: MediaQuery.of(context).size.width,
+              //     child: CameraPreview(controller),
+              //   ),
+              // ),
+              // FloatingActionButton(
+              //   child: const Icon(Icons.camera),
+              //   onPressed: () async {
+              //     pictureFile = await controller.takePicture();
+              //     setState(() {});
+              //   },
+              // ),
+              // if (pictureFile != null)
+              //   Image.network(pictureFile!.path, height: 200),
+            ])),
+      ),
+    );
 
-      // Scaffold(
-      //   body: Center(
-      //     child: Column(children: [
-      //       Padding(
-      //         padding:
-      //             EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.4),
-      //         child: CupertinoButton(
-      //             color: CupertinoColors.systemRed,
-      //             child: Text('Camera'),
-      //             onPressed: () {}),
-      //       ),
-      //       Padding(
-      //         padding:
-      //             EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.02),
-      //         child: CupertinoButton(
-      //             color: CupertinoColors.systemRed,
-      //             child: Text('From Gallery'),
-      //             onPressed: () {}),
-      //       ),
-      //     ]),
-      //   ),
-      // );
-    });
+    // Scaffold(
+    //   body: Center(
+    //     child: Column(children: [
+    //       Padding(
+    //         padding:
+    //             EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.4),
+    //         child: CupertinoButton(
+    //             color: CupertinoColors.systemRed,
+    //             child: Text('Camera'),
+    //             onPressed: () {}),
+    //       ),
+    //       Padding(
+    //         padding:
+    //             EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.02),
+    //         child: CupertinoButton(
+    //             color: CupertinoColors.systemRed,
+    //             child: Text('From Gallery'),
+    //             onPressed: () {}),
+    //       ),
+    //     ]),
+    //   ),
+    // );
   }
 }

@@ -1,3 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart%20';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qarshi_app/Observer/CreateProject.dart';
@@ -6,7 +9,6 @@ import 'package:qarshi_app/accounts/otherAccount.dart';
 import 'package:qarshi_app/services/RouteManager.dart';
 import 'package:get/get.dart';
 import 'package:qarshi_app/Observer/Sepecies.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:qarshi_app/services/dbManager.dart';
 
 class HomePage extends StatefulWidget {
@@ -23,13 +25,16 @@ class _HomePageState extends State<HomePage> {
   bool request = true;
   FixedExtentScrollController fixedExtentScrollController =
       FixedExtentScrollController();
+  List imgesUrl = [];
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   WidgetsBinding.instance.addPostFrameCallback((_) => getObserverList());
-  //   WidgetsBinding.instance.addPostFrameCallback((_) => getProjectList());
-  // }
+  getImage(freindId) async {
+    List imgesUrl = [];
+    imgesUrl.add(await FirebaseStorage.instance
+        .ref()
+        .child('observations/$freindId/$freindId+"1" ')
+        .getDownloadURL());
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,33 +59,98 @@ class _HomePageState extends State<HomePage> {
                         content: SizedBox(
                           height: MediaQuery.of(context).size.height * 0.8,
                           width: MediaQuery.of(context).size.width * 1,
-                          child: ListView.builder(
-                            // shrinkWrap: true,
-                            itemCount: 20,
-                            itemBuilder: (context, index) {
-                              return Card(
-
-                                  // child: Padding(
-                                  // padding: const EdgeInsets.all(8.0),
-                                  child: ListTile(
-                                onTap: (() {
-                                  context
-                                      .read<ManageRoute>()
-                                      .ChangeMessage('CreateMessage');
-                                  Navigator.pop(context, 'OK');
-                                  Get.to(const ChatPage());
-                                }),
-                                title: Text('Message $index'),
-                                subtitle: const Text('Observer'),
-                              ));
-                            },
-                          ),
+                          child: StreamBuilder(
+                              stream: FirebaseFirestore.instance
+                                  .collection('observers')
+                                  .doc(context
+                                      .watch<dbManager>()
+                                      .currentobserverdoc["uid"])
+                                  .collection('messages')
+                                  .orderBy('time', descending: true)
+                                  .snapshots(),
+                              builder: (context, AsyncSnapshot snapshot) {
+                                if (snapshot.hasData) {
+                                  if (snapshot.data.docs.length < 1) {
+                                    return const Center(
+                                      child: Text("No Chats Available !"),
+                                    );
+                                  }
+                                  return ListView.builder(
+                                      itemCount: snapshot.data.docs.length,
+                                      itemBuilder: (context, index) {
+                                        var friendId =
+                                            snapshot.data.docs[index].id;
+                                        var lastMsg = snapshot.data.docs[index]
+                                            ['last_msg'];
+                                        return FutureBuilder(
+                                          future: FirebaseFirestore.instance
+                                              .collection('observers')
+                                              .doc(friendId)
+                                              .get(),
+                                          builder: (context,
+                                              AsyncSnapshot asyncSnapshot) {
+                                            if (asyncSnapshot.hasData) {
+                                              var friend = asyncSnapshot.data;
+                                              return ListTile(
+                                                leading: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(80),
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: friend['image'],
+                                                    placeholder: (conteext,
+                                                            url) =>
+                                                        const CircularProgressIndicator(),
+                                                    errorWidget:
+                                                        (context, url, error) =>
+                                                            const Icon(
+                                                      Icons.error,
+                                                    ),
+                                                    height: 50,
+                                                  ),
+                                                ),
+                                                title: Text(friend['name']),
+                                                subtitle: Container(
+                                                  child: Text(
+                                                    "$lastMsg",
+                                                    style: const TextStyle(
+                                                        color: Colors.grey),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                onTap: () {
+                                                  Navigator.pop(context);
+                                                  context
+                                                      .read<dbManager>()
+                                                      .ChangeObserverDoc(
+                                                          friend);
+                                                  Get.to(const ChatPage(),
+                                                      arguments: friend["uid"]);
+                                                },
+                                              );
+                                            }
+                                            return const LinearProgressIndicator();
+                                          },
+                                        );
+                                      });
+                                }
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }),
                         ),
-                        actions: const <Widget>[
+                        actions: <Widget>[
                           // TextButton(
                           //   onPressed: () => Navigator.pop(context, 'OK'),
                           //   child:
-                          Text('OK'),
+                          ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  primary: Colors.white, elevation: 0),
+                              onPressed: () => Navigator.pop(context, 'OK'),
+                              child: const Text(
+                                'OK',
+                                style: TextStyle(color: Colors.red),
+                              )),
                           // ),
                         ],
                       ));
@@ -94,7 +164,7 @@ class _HomePageState extends State<HomePage> {
                   onPressed: () => showDialog(
                       context: context,
                       builder: (BuildContext context) => AlertDialog(
-                            title: Text("Requests"),
+                            title: const Text("Requests"),
                             contentPadding: EdgeInsets.zero,
                             content: SizedBox(
                                 height:
@@ -105,72 +175,110 @@ class _HomePageState extends State<HomePage> {
                                         .collection('observers')
                                         .doc(context
                                             .watch<dbManager>()
-                                            .currentobserverdoc!['uid'])
+                                            .currentobserverdoc['uid'])
                                         .collection('request')
                                         .snapshots(),
                                     builder: (BuildContext context,
                                         AsyncSnapshot<QuerySnapshot>
                                             Projectssnapshot) {
-                                      return ListView.builder(
-                                        shrinkWrap: true,
-                                        itemCount:
-                                            Projectssnapshot.data!.docs.length,
-                                        itemBuilder: (context, index) {
-                                          String uid = context
-                                              .watch<dbManager>()
-                                              .currentobserverdoc!['uid'];
-                                          String name = context
-                                              .watch<dbManager>()
-                                              .currentobserverdoc!['name'];
-                                          DocumentSnapshot RequestSnapshot =
-                                              Projectssnapshot
-                                                  .data!.docs[index];
+                                      if (Projectssnapshot.hasData) {
+                                        return ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: Projectssnapshot
+                                              .data!.docs.length,
+                                          itemBuilder: (context, index) {
+                                            String uid = context
+                                                .watch<dbManager>()
+                                                .currentobserverdoc['uid'];
+                                            String name = context
+                                                .watch<dbManager>()
+                                                .currentobserverdoc['uid'];
+                                            DocumentSnapshot RequestSnapshot =
+                                                Projectssnapshot
+                                                    .data!.docs[index];
 
-                                          String Projectid = Projectssnapshot
-                                              .data!.docs[index].id;
-                                          return Card(
+                                            String Projectid = Projectssnapshot
+                                                .data!.docs[index].id;
+                                            return Card(
 
-                                              // child: Padding(
-                                              // padding: const EdgeInsets.all(8.0),
-                                              child: ListTile(
-                                            title: Text(
-                                                RequestSnapshot['ProjectName']),
-                                            subtitle: Text(RequestSnapshot[
-                                                'observername']),
-                                            trailing: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      EdgeInsets.only(right: 5),
-                                                  child: IconButton(
+                                                // child: Padding(
+                                                // padding: const EdgeInsets.all(8.0),
+                                                child: ListTile(
+                                              title: Text(RequestSnapshot[
+                                                  'ProjectName']),
+                                              subtitle: Text(RequestSnapshot[
+                                                  'observername']),
+                                              trailing: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            right: 5),
+                                                    child: IconButton(
+                                                      onPressed: (() {
+                                                        FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                'observers')
+                                                            .doc(RequestSnapshot[
+                                                                'senderUid'])
+                                                            .collection(
+                                                                'projects')
+                                                            .doc(RequestSnapshot[
+                                                                'ProjectName'])
+                                                            .update({
+                                                          "memberList":
+                                                              FieldValue
+                                                                  .arrayUnion(
+                                                                      [name])
+                                                        });
+                                                        // FirebaseFirestore.instance
+                                                        //     .collection(
+                                                        //         'observers')
+                                                        //     .doc(RequestSnapshot[
+                                                        //         'senderUid'])
+                                                        //     .collection(
+                                                        //         'projects')
+                                                        //     .doc(RequestSnapshot[
+                                                        //         'ProjectName'])
+                                                        //     .update({
+                                                        //   "memberList": FieldValue
+                                                        //       .arrayUnion([name])
+                                                        // });
+                                                        FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                "observers")
+                                                            .doc(uid)
+                                                            .update({
+                                                          "ProjectRequest":
+                                                              FieldValue
+                                                                  .arrayRemove([
+                                                            RequestSnapshot[
+                                                                'ProjectName']
+                                                          ])
+                                                        });
+                                                        FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                'observers')
+                                                            .doc(uid)
+                                                            .collection(
+                                                                'request')
+                                                            .doc(RequestSnapshot[
+                                                                'ProjectName'])
+                                                            .delete();
+                                                      }),
+                                                      icon: const Icon(
+                                                        Icons.done_rounded,
+                                                        color:
+                                                            Colors.lightGreen,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  IconButton(
                                                     onPressed: (() {
-                                                      FirebaseFirestore.instance
-                                                          .collection(
-                                                              'observers')
-                                                          .doc(RequestSnapshot[
-                                                              'senderUid'])
-                                                          .collection(
-                                                              'projects')
-                                                          .doc(RequestSnapshot[
-                                                              'ProjectName'])
-                                                          .update({
-                                                        "memberList": FieldValue
-                                                            .arrayUnion([name])
-                                                      });
-                                                      // FirebaseFirestore.instance
-                                                      //     .collection(
-                                                      //         'observers')
-                                                      //     .doc(RequestSnapshot[
-                                                      //         'senderUid'])
-                                                      //     .collection(
-                                                      //         'projects')
-                                                      //     .doc(RequestSnapshot[
-                                                      //         'ProjectName'])
-                                                      //     .update({
-                                                      //   "memberList": FieldValue
-                                                      //       .arrayUnion([name])
-                                                      // });
                                                       FirebaseFirestore.instance
                                                           .collection(
                                                               "observers")
@@ -192,43 +300,21 @@ class _HomePageState extends State<HomePage> {
                                                               'ProjectName'])
                                                           .delete();
                                                     }),
-                                                    icon: Icon(
-                                                      Icons.done_rounded,
-                                                      color: Colors.lightGreen,
+                                                    icon: const Icon(
+                                                      Icons.cancel,
+                                                      color: Colors.red,
                                                     ),
-                                                  ),
-                                                ),
-                                                IconButton(
-                                                  onPressed: (() {
-                                                    FirebaseFirestore.instance
-                                                        .collection("observers")
-                                                        .doc(uid)
-                                                        .update({
-                                                      "ProjectRequest":
-                                                          FieldValue
-                                                              .arrayRemove([
-                                                        RequestSnapshot[
-                                                            'ProjectName']
-                                                      ])
-                                                    });
-                                                    FirebaseFirestore.instance
-                                                        .collection('observers')
-                                                        .doc(uid)
-                                                        .collection('request')
-                                                        .doc(RequestSnapshot[
-                                                            'ProjectName'])
-                                                        .delete();
-                                                  }),
-                                                  icon: Icon(
-                                                    Icons.cancel,
-                                                    color: Colors.red,
-                                                  ),
-                                                )
-                                              ],
-                                            ),
-                                          ));
-                                        },
-                                      );
+                                                  )
+                                                ],
+                                              ),
+                                            ));
+                                          },
+                                        );
+                                      } else {
+                                        return const Center(
+                                          child: CircularProgressIndicator(),
+                                        );
+                                      }
                                     })),
                             actions: const <Widget>[
                               // TextButton(
@@ -244,7 +330,8 @@ class _HomePageState extends State<HomePage> {
                     size: 32.0,
                   ))),
           Visibility(
-            visible: 'Researcher' == context.watch<ManageRoute>().User,
+            visible: 'Researcher' == context.watch<ManageRoute>().User ||
+                'Admin' == context.watch<ManageRoute>().User,
             child: Padding(
                 padding: EdgeInsets.only(
                     right: MediaQuery.of(context).size.width * 0.05),
@@ -256,6 +343,7 @@ class _HomePageState extends State<HomePage> {
                       showDialog(
                         context: context,
                         builder: (BuildContext context) => AlertDialog(
+                          title: const Text("Project Notification"),
                           content: SizedBox(
                               height: MediaQuery.of(context).size.height * 0.8,
                               width: MediaQuery.of(context).size.width * 1,
@@ -264,112 +352,140 @@ class _HomePageState extends State<HomePage> {
                                       .collection('observers')
                                       .doc(context
                                           .watch<dbManager>()
-                                          .currentobserverdoc!['uid'])
+                                          .currentobserverdoc['uid'])
                                       .collection('request')
                                       .snapshots(),
                                   builder: (BuildContext context,
                                       AsyncSnapshot<QuerySnapshot>
                                           Projectssnapshot) {
-                                    return ListView.builder(
-                                      shrinkWrap: true,
-                                      itemCount:
-                                          Projectssnapshot.data!.docs.length,
-                                      itemBuilder: (context, index) {
-                                        String uid = context
-                                            .watch<dbManager>()
-                                            .currentobserverdoc!['uid'];
-                                        String name = context
-                                            .watch<dbManager>()
-                                            .currentobserverdoc!['name'];
-                                        DocumentSnapshot RequestSnapshot =
-                                            Projectssnapshot.data!.docs[index];
+                                    if (Projectssnapshot.hasData) {
+                                      if (Projectssnapshot.data!.docs.length <
+                                          1) {
+                                        return const Center(
+                                          child: Text("No Notification !"),
+                                        );
+                                      } else {
+                                        return ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: Projectssnapshot
+                                              .data!.docs.length,
+                                          itemBuilder: (context, index) {
+                                            String uid = context
+                                                .watch<dbManager>()
+                                                .currentobserverdoc['uid'];
+                                            String name = context
+                                                .watch<dbManager>()
+                                                .currentobserverdoc['name'];
+                                            DocumentSnapshot RequestSnapshot =
+                                                Projectssnapshot
+                                                    .data!.docs[index];
 
-                                        String Projectid = Projectssnapshot
-                                            .data!.docs[index].id;
-                                        return Card(
+                                            String Projectid = Projectssnapshot
+                                                .data!.docs[index].id;
+                                            return Card(
 
-                                            // child: Padding(
-                                            // padding: const EdgeInsets.all(8.0),
-                                            child: ListTile(
-                                          title: Text(
-                                              RequestSnapshot['ProjectName']),
-                                          subtitle: Text(
-                                              RequestSnapshot['senderUid']),
-                                          trailing: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    EdgeInsets.only(right: 5),
-                                                child: IconButton(
-                                                  onPressed: (() {
-                                                    FirebaseFirestore.instance
-                                                        .collection('observers')
-                                                        .doc(RequestSnapshot[
-                                                            'senderUid'])
-                                                        .collection('projects')
-                                                        .doc(RequestSnapshot[
-                                                            'ProjectName'])
-                                                        .update({
-                                                      "memberList":
-                                                          FieldValue.arrayUnion(
-                                                              [name])
-                                                    });
-                                                    FirebaseFirestore.instance
-                                                        .collection("observers")
-                                                        .doc(uid)
-                                                        .update({
-                                                      "ProjectRequest":
-                                                          FieldValue
-                                                              .arrayRemove([
-                                                        RequestSnapshot[
-                                                            'ProjectName']
-                                                      ])
-                                                    });
-                                                    FirebaseFirestore.instance
-                                                        .collection('observers')
-                                                        .doc(uid)
-                                                        .collection('request')
-                                                        .doc(RequestSnapshot[
-                                                            'ProjectName'])
-                                                        .delete();
-                                                  }),
-                                                  icon: Icon(
-                                                    Icons.done_rounded,
-                                                    color: Colors.lightGreen,
+                                                // child: Padding(
+                                                // padding: const EdgeInsets.all(8.0),
+                                                child: ListTile(
+                                              title: Text(RequestSnapshot[
+                                                  'ProjectName']),
+                                              subtitle: Text(
+                                                  RequestSnapshot['senderUid']),
+                                              trailing: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            right: 5),
+                                                    child: IconButton(
+                                                      onPressed: (() {
+                                                        FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                'observers')
+                                                            .doc(RequestSnapshot[
+                                                                'senderUid'])
+                                                            .collection(
+                                                                'projects')
+                                                            .doc(RequestSnapshot[
+                                                                'ProjectName'])
+                                                            .update({
+                                                          "memberList":
+                                                              FieldValue
+                                                                  .arrayUnion(
+                                                                      [name])
+                                                        });
+                                                        FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                "observers")
+                                                            .doc(uid)
+                                                            .update({
+                                                          "ProjectRequest":
+                                                              FieldValue
+                                                                  .arrayRemove([
+                                                            RequestSnapshot[
+                                                                'ProjectName']
+                                                          ])
+                                                        });
+                                                        FirebaseFirestore
+                                                            .instance
+                                                            .collection(
+                                                                'observers')
+                                                            .doc(uid)
+                                                            .collection(
+                                                                'request')
+                                                            .doc(RequestSnapshot[
+                                                                'ProjectName'])
+                                                            .delete();
+                                                      }),
+                                                      icon: const Icon(
+                                                        Icons.done_rounded,
+                                                        color:
+                                                            Colors.lightGreen,
+                                                      ),
+                                                    ),
                                                   ),
-                                                ),
+                                                  IconButton(
+                                                    onPressed: (() {
+                                                      FirebaseFirestore.instance
+                                                          .collection(
+                                                              "observers")
+                                                          .doc(uid)
+                                                          .update({
+                                                        "ProjectRequest":
+                                                            FieldValue
+                                                                .arrayRemove([
+                                                          RequestSnapshot[
+                                                              'ProjectName']
+                                                        ])
+                                                      });
+                                                      FirebaseFirestore.instance
+                                                          .collection(
+                                                              'observers')
+                                                          .doc(uid)
+                                                          .collection('request')
+                                                          .doc(RequestSnapshot[
+                                                              'ProjectName'])
+                                                          .delete();
+                                                    }),
+                                                    icon: const Icon(
+                                                      Icons.cancel,
+                                                      color: Colors.red,
+                                                    ),
+                                                  )
+                                                ],
                                               ),
-                                              IconButton(
-                                                onPressed: (() {
-                                                  FirebaseFirestore.instance
-                                                      .collection("observers")
-                                                      .doc(uid)
-                                                      .update({
-                                                    "ProjectRequest":
-                                                        FieldValue.arrayRemove([
-                                                      RequestSnapshot[
-                                                          'ProjectName']
-                                                    ])
-                                                  });
-                                                  FirebaseFirestore.instance
-                                                      .collection('observers')
-                                                      .doc(uid)
-                                                      .collection('request')
-                                                      .doc(RequestSnapshot[
-                                                          'ProjectName'])
-                                                      .delete();
-                                                }),
-                                                icon: Icon(
-                                                  Icons.cancel,
-                                                  color: Colors.red,
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        ));
-                                      },
-                                    );
+                                            ));
+                                          },
+                                        );
+                                      }
+                                    } else {
+                                      return const Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    }
                                   })),
                           actions: const <Widget>[
                             // TextButton(
@@ -389,7 +505,7 @@ class _HomePageState extends State<HomePage> {
                                   height:
                                       MediaQuery.of(context).size.height * 0.8,
                                   width: MediaQuery.of(context).size.width * 1,
-                                  child: Center(
+                                  child: const Center(
                                       child: Text("No Observation requests !")),
                                 ),
                                 actions: const <Widget>[
@@ -403,16 +519,16 @@ class _HomePageState extends State<HomePage> {
                     }
                   },
                   itemBuilder: (context) => [
-                    PopupMenuItem(
+                    const PopupMenuItem(
                       child: Text("Project"),
                       value: "first",
                     ),
-                    PopupMenuItem(
+                    const PopupMenuItem(
                       child: Text("Observation"),
                       value: "Second",
                     ),
                   ],
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.notifications,
                     color: Colors.red,
                   ),
@@ -500,13 +616,13 @@ class _HomePageState extends State<HomePage> {
                             .snapshots(),
                         builder: (BuildContext context,
                             AsyncSnapshot<QuerySnapshot> Projectssnapshot) {
-                          if (!snapshot.hasData) {
+                          if (!Projectssnapshot.hasData) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
                           } else {
                             return ListView.builder(
-                                physics: NeverScrollableScrollPhysics(),
+                                physics: const NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
                                 itemCount: Projectssnapshot.data!.docs.length,
                                 itemBuilder: (context, index) {
@@ -517,7 +633,9 @@ class _HomePageState extends State<HomePage> {
                                   context
                                       .read<dbManager>()
                                       .ChangeObservationDoc(Subprojectdata);
+
                                   String obName = projectdata['name'];
+
                                   return GestureDetector(
                                     onTap: () {
                                       FirebaseFirestore.instance
@@ -543,11 +661,12 @@ class _HomePageState extends State<HomePage> {
                                         ), // RoundedRectangleBorder
                                         child: Column(children: [
                                           Container(
-                                            decoration: const BoxDecoration(
+                                            decoration: BoxDecoration(
                                                 image: DecorationImage(
-                                                    image: ExactAssetImage(
-                                                      'assets/Image/splash.png',
-                                                    ),
+                                                    image: Image.network(
+                                                            Subprojectdata[
+                                                                'image1'])
+                                                        .image,
                                                     fit: BoxFit.cover)),
                                             height: 100,
                                             width: 400,
@@ -581,7 +700,7 @@ class _HomePageState extends State<HomePage> {
                                               child: Text(
                                                 context
                                                         .watch<dbManager>()
-                                                        .observationdoc![
+                                                        .observationdoc[
                                                     'BotanicalName'],
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -627,6 +746,45 @@ class _HomePageState extends State<HomePage> {
                                               ),
                                             ),
                                           ),
+                                          Visibility(
+                                            visible: projectdata['uid'] ==
+                                                context
+                                                    .watch<dbManager>()
+                                                    .currentobserverdoc['uid'],
+                                            child: Align(
+                                              alignment: Alignment.bottomLeft,
+                                              child: IconButton(
+                                                  onPressed: (() {
+                                                    FirebaseFirestore.instance
+                                                        .collection('observers')
+                                                        .doc(context
+                                                                .watch<dbManager>()
+                                                                .currentobserverdoc[
+                                                            'uid'])
+                                                        .collection(
+                                                            'observations')
+                                                        .doc(Projectid)
+                                                        .delete();
+                                                    FirebaseStorage.instance
+                                                        .ref()
+                                                        .child(
+                                                            '/observations/$id/$id+"1" ')
+                                                        .delete();
+                                                    FirebaseStorage.instance
+                                                        .ref()
+                                                        .child(
+                                                            '/observations/$id/$id+"2" ')
+                                                        .delete();
+                                                    FirebaseStorage.instance
+                                                        .ref()
+                                                        .child(
+                                                            '/observations/$id/$id+"3" ')
+                                                        .delete();
+                                                  }),
+                                                  icon: const Icon(
+                                                      Icons.delete_sharp)),
+                                            ),
+                                          )
                                           // Padding(
                                           //   padding: const EdgeInsets.only(right: 281, top: 5),
                                           //   child: Text(
@@ -659,64 +817,145 @@ class _HomePageState extends State<HomePage> {
                 );
               }
             }),
-        StreamBuilder(
-            stream: FirebaseFirestore.instance
-                .collection('observers')
-                .orderBy('noObservation', descending: true)
-                .snapshots(),
-            builder:
-                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              } else {
-                return ListView.builder(
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: snapshot.data!.docs.length,
-                  itemBuilder: (context, index) {
-                    DocumentSnapshot projectdata = snapshot.data!.docs[index];
+        Visibility(
+          visible: 'Observer' == context.watch<ManageRoute>().User ||
+              'Researcher' == context.watch<ManageRoute>().User,
+          child: StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('observers')
+                  .orderBy('noObservation', descending: true)
+                  .snapshots(),
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else {
+                  return ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: snapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      DocumentSnapshot projectdata = snapshot.data!.docs[index];
 
-                    return Card(
-                      child: ListTile(
-                        leading: const Image(
-                          width: 50,
-                          image: AssetImage('assets/Image/splash.png'),
-                        ), // Ink.image
+                      return Card(
+                        child: ListTile(
+                          leading: const Image(
+                            width: 50,
+                            image: AssetImage('assets/Image/splash.png'),
+                          ), // Ink.image
 
-                        title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                projectdata['name'],
-                                style: const TextStyle(fontSize: 18),
-                              ),
-                              Text(
-                                "Rank: ${index + 1}",
-                                style: const TextStyle(fontSize: 12),
-                              )
-                            ]),
+                          title: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  projectdata['name'],
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                                Text(
+                                  "Rank: ${index + 1}",
+                                  style: const TextStyle(fontSize: 12),
+                                )
+                              ]),
 
-                        trailing: Text(
-                          projectdata['noObservation'].toString(),
-                          style: const TextStyle(fontSize: 16),
+                          trailing: Text(
+                            projectdata['noObservation'].toString(),
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          onTap: () {
+                            context
+                                .read<ManageRoute>()
+                                .ChangeProfile('ObserverAcc');
+                            context
+                                .read<dbManager>()
+                                .ChangeObserverDoc(projectdata);
+
+                            Get.to(const OtherAccount());
+                          },
                         ),
-                        onTap: () {
-                          context
-                              .read<ManageRoute>()
-                              .ChangeProfile('ObserverAcc');
-                          context
-                              .read<dbManager>()
-                              .ChangeObserverDoc(projectdata);
+                      );
+                    },
+                  );
+                }
+              }),
+          replacement: StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('observers')
+                  .orderBy('noObservation', descending: true)
+                  .snapshots(),
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else {
+                  return ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: snapshot.data!.docs.length,
+                      itemBuilder: (context, index) {
+                        DocumentSnapshot projectdata =
+                            snapshot.data!.docs[index];
+                        List<String> items = <String>[
+                          'Observer',
+                          'Researcher',
+                          'Admin'
+                        ];
+                        String dropdownvalue = projectdata['role'];
 
-                          Get.to(const OtherAccount());
-                        },
-                      ),
-                    );
-                  },
-                );
-              }
-            }),
+                        return Card(
+                          child: ListTile(
+                            leading: const Image(
+                              width: 50,
+                              image: AssetImage('assets/Image/splash.png'),
+                            ),
+                            title: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    projectdata['name'],
+                                    style: const TextStyle(fontSize: 18),
+                                  ),
+                                  Text(
+                                    "Rank: ${index + 1}",
+                                    style: const TextStyle(fontSize: 12),
+                                  )
+                                ]),
+                            trailing: DropdownButton(
+                              value: dropdownvalue,
+                              icon: const Icon(Icons.keyboard_arrow_down),
+                              items: items.map((String items) {
+                                return DropdownMenuItem(
+                                  value: items,
+                                  child: Text(items),
+                                );
+                              }).toList(),
+                              onChanged: (String? newValue) {
+                                FirebaseFirestore.instance
+                                    .collection('observers')
+                                    .doc(projectdata['uid'])
+                                    .update({'role': newValue});
+                                setState(() {
+                                  dropdownvalue = newValue!;
+                                });
+                              },
+                            ),
+                            onTap: () {
+                              context
+                                  .read<ManageRoute>()
+                                  .ChangeProfile('ObserverAcc');
+                              context
+                                  .read<dbManager>()
+                                  .ChangeObserverDoc(projectdata);
+
+                              Get.to(const OtherAccount());
+                            },
+                          ),
+                        );
+                      });
+                }
+              }),
+        ),
         StreamBuilder(
             stream:
                 FirebaseFirestore.instance.collection('observers').snapshots(),
@@ -740,13 +979,13 @@ class _HomePageState extends State<HomePage> {
                             .snapshots(),
                         builder: (BuildContext context,
                             AsyncSnapshot<QuerySnapshot> Projectssnapshot) {
-                          if (!snapshot.hasData) {
+                          if (!Projectssnapshot.hasData) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
                           } else {
                             return ListView.builder(
-                                physics: NeverScrollableScrollPhysics(),
+                                physics: const NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
                                 itemCount: Projectssnapshot.data!.docs.length,
                                 itemBuilder: (context, index) {
@@ -786,11 +1025,12 @@ class _HomePageState extends State<HomePage> {
                                         ), // RoundedRectangleBorder
                                         child: Column(children: [
                                           Container(
-                                            decoration: const BoxDecoration(
+                                            decoration: BoxDecoration(
                                                 image: DecorationImage(
-                                                    image: ExactAssetImage(
-                                                      'assets/Image/splash.png',
-                                                    ),
+                                                    image: Image.network(
+                                                            Subprojectdata[
+                                                                'image1'])
+                                                        .image,
                                                     fit: BoxFit.cover)),
                                             height: 100,
                                             width: 400,
@@ -824,7 +1064,7 @@ class _HomePageState extends State<HomePage> {
                                               child: Text(
                                                 context
                                                         .watch<dbManager>()
-                                                        .observationdoc![
+                                                        .observationdoc[
                                                     'BotanicalName'],
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -834,17 +1074,6 @@ class _HomePageState extends State<HomePage> {
                                               ),
                                             ),
                                           ),
-                                          // Positioned(
-                                          //   right: 5,
-                                          //   child: Text(
-                                          //     '* ',
-                                          //     style: TextStyle(
-                                          //       fontWeight: FontWeight.bold,
-                                          //       color: Color(0xffcb1212),
-                                          //       fontSize: 40,
-                                          //     ), // TextStyle
-                                          //   ),
-                                          // ),
 
                                           Align(
                                             alignment: Alignment.centerLeft,
@@ -870,6 +1099,45 @@ class _HomePageState extends State<HomePage> {
                                               ),
                                             ),
                                           ),
+                                          Visibility(
+                                            visible: projectdata['uid'] ==
+                                                context
+                                                    .watch<dbManager>()
+                                                    .currentobserverdoc['uid'],
+                                            child: Align(
+                                              alignment: Alignment.bottomLeft,
+                                              child: IconButton(
+                                                  onPressed: (() {
+                                                    FirebaseFirestore.instance
+                                                        .collection('observers')
+                                                        .doc(context
+                                                                .watch<dbManager>()
+                                                                .currentobserverdoc[
+                                                            'uid'])
+                                                        .collection(
+                                                            'observations')
+                                                        .doc(Projectid)
+                                                        .delete();
+                                                    FirebaseStorage.instance
+                                                        .ref()
+                                                        .child(
+                                                            '/observations/$id/$id+"1" ')
+                                                        .delete();
+                                                    FirebaseStorage.instance
+                                                        .ref()
+                                                        .child(
+                                                            '/observations/$id/$id+"2" ')
+                                                        .delete();
+                                                    FirebaseStorage.instance
+                                                        .ref()
+                                                        .child(
+                                                            '/observations/$id/$id+"3" ')
+                                                        .delete();
+                                                  }),
+                                                  icon: const Icon(
+                                                      Icons.delete_sharp)),
+                                            ),
+                                          )
                                           // Padding(
                                           //   padding: const EdgeInsets.only(right: 281, top: 5),
                                           //   child: Text(
@@ -907,11 +1175,7 @@ class _HomePageState extends State<HomePage> {
                 FirebaseFirestore.instance.collection('observers').snapshots(),
             builder:
                 (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              } else {
+              if (snapshot.hasData) {
                 return ListView.builder(
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (context, index) {
@@ -924,13 +1188,13 @@ class _HomePageState extends State<HomePage> {
                             .snapshots(),
                         builder: (BuildContext context,
                             AsyncSnapshot<QuerySnapshot> Projectssnapshot) {
-                          if (!snapshot.hasData) {
+                          if (!Projectssnapshot.hasData) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
                           } else {
                             return ListView.builder(
-                              physics: NeverScrollableScrollPhysics(),
+                              physics: const NeverScrollableScrollPhysics(),
                               shrinkWrap: true,
                               itemCount: Projectssnapshot.data!.docs.length,
                               itemBuilder: (context, index) {
@@ -946,8 +1210,7 @@ class _HomePageState extends State<HomePage> {
                                           .read<dbManager>()
                                           .ChangeProjectDoc(Subprojectdata);
                                       Get.to(const Project(),
-                                          arguments:
-                                              Subprojectdata['ProjectName']);
+                                          arguments: Projectid);
                                     }),
                                     // leading: Text(book[index].rank.toString()),
                                     title: Column(
@@ -959,12 +1222,11 @@ class _HomePageState extends State<HomePage> {
                                             style:
                                                 const TextStyle(fontSize: 18),
                                           ),
-                                          const Text(
-                                            "Members:",
-                                            style: TextStyle(fontSize: 12),
-                                          )
                                         ]),
-                                    trailing: const Text("7"),
+                                    trailing: Text("Members: " +
+                                        Subprojectdata['memberList']
+                                            .length
+                                            .toString()),
                                   ),
                                 );
                               },
@@ -972,6 +1234,10 @@ class _HomePageState extends State<HomePage> {
                           }
                         });
                   },
+                );
+              } else {
+                return const Center(
+                  child: CircularProgressIndicator(),
                 );
               }
             })

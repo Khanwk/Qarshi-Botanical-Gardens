@@ -80,21 +80,21 @@ class _SepeciesState extends State<Sepecies> {
                         subtitle: Text(
                           context
                               .watch<dbManager>()
-                              .observerdoc!['name']
+                              .observerdoc['name']
                               .toString(),
                           style: TextStyle(fontSize: 14, color: Colors.white),
                         ),
                         trailing: Visibility(
                           visible: context
                                   .watch<dbManager>()
-                                  .currentobserverdoc!['name'] !=
-                              context.watch<dbManager>().observerdoc!['name'],
+                                  .currentobserverdoc['name'] !=
+                              context.watch<dbManager>().observerdoc['name'],
                           child: IconButton(
                               onPressed: () {
                                 Get.to(const ChatPage(),
                                     arguments: Provider.of<dbManager>(context,
                                             listen: false)
-                                        .observerdoc!['uid']);
+                                        .observerdoc['uid']);
                               },
                               icon: const Icon(
                                 Icons.message,

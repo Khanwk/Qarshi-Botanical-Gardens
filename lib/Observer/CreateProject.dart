@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
@@ -30,8 +29,37 @@ class _ProjectState extends State<Project> {
           backgroundColor: Colors.red,
           actions: [
             Visibility(
-              // visible: context.watch<dbManager>().projectdoc!['admin'] ==
-              //     context.watch<dbManager>().currentobserverdoc!['uid'],
+              visible: context
+                      .watch<dbManager>()
+                      .projectdoc['memberList']
+                      .contains(context
+                          .watch<dbManager>()
+                          .currentobserverdoc['uid']) &&
+                  context.watch<dbManager>().projectdoc['admin'] !=
+                      context.watch<dbManager>().currentobserverdoc['uid'],
+              child: PopupMenuButton(
+                  // add icon, by default "3 dot" icon
+                  icon: const Icon(Icons.add),
+                  itemBuilder: (context) {
+                    return [
+                      const PopupMenuItem<int>(
+                        value: 0,
+                        child: Text("Observation"),
+                      ),
+                    ];
+                  },
+                  onSelected: (value) {
+                    if (value == 0) {
+                      Get.to(ProjectAdd(), arguments: [Projid, 'observation']);
+                      // Get.to(const ChatPage());
+                    } else if (value == 1) {
+                      Get.to(const ProjectAdd(), arguments: [Projid, 'member']);
+                    }
+                  }),
+            ),
+            Visibility(
+              visible: context.watch<dbManager>().projectdoc['admin'] ==
+                  context.watch<dbManager>().currentobserverdoc['uid'],
               child: PopupMenuButton(
                   // add icon, by default "3 dot" icon
                   icon: const Icon(Icons.add),
@@ -83,18 +111,21 @@ class _ProjectState extends State<Project> {
                               shrinkWrap: true,
                               itemCount: context
                                   .watch<dbManager>()
-                                  .projectdoc!['observationList']
+                                  .projectdoc['observationList']
                                   .length,
                               itemBuilder: ((context, findex) {
-                                List checkList = context
-                                    .watch<dbManager>()
-                                    .projectdoc!['observationList'];
+                                // List checkList = context
+                                //     .watch<dbManager>()
+                                //     .projectdoc['observationList'];
                                 return StreamBuilder(
                                     stream: FirebaseFirestore.instance
                                         .collection('observers')
                                         .snapshots(),
                                     builder: (BuildContext context,
                                         AsyncSnapshot<QuerySnapshot> snapshot) {
+                                      print(
+                                          "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
+                                      print(findex);
                                       if (!snapshot.hasData) {
                                         return const Center(
                                           child: CircularProgressIndicator(),
@@ -114,14 +145,18 @@ class _ProjectState extends State<Project> {
                                                     .collection('observers')
                                                     .doc(id)
                                                     .collection('observations')
-                                                    .where('BotanicalName',
-                                                        isEqualTo:
-                                                            checkList[findex])
+                                                    .where('uid',
+                                                        isEqualTo: context
+                                                                    .watch<dbManager>()
+                                                                    .projectdoc[
+                                                                'observationList']
+                                                            [findex])
                                                     .snapshots(),
                                                 builder: (BuildContext context,
                                                     AsyncSnapshot<QuerySnapshot>
                                                         Projectssnapshot) {
-                                                  if (!snapshot.hasData) {
+                                                  if (!Projectssnapshot
+                                                      .hasData) {
                                                     return const Center(
                                                       child:
                                                           CircularProgressIndicator(),
@@ -166,11 +201,9 @@ class _ProjectState extends State<Project> {
                                                               child: Column(
                                                                   children: [
                                                                     Container(
-                                                                      decoration: const BoxDecoration(
+                                                                      decoration: BoxDecoration(
                                                                           image: DecorationImage(
-                                                                              image: ExactAssetImage(
-                                                                                'assets/Image/splash.png',
-                                                                              ),
+                                                                              image: Image.network(context.watch<dbManager>().observationdoc['image1']).image,
                                                                               fit: BoxFit.cover)),
                                                                       height:
                                                                           100,
@@ -208,9 +241,14 @@ class _ProjectState extends State<Project> {
                                                                             Alignment.centerLeft,
                                                                         child:
                                                                             Text(
+                                                                          // context
+                                                                          //     .watch<dbManager>()
+                                                                          //     .projectdoc['observationList']
+                                                                          //     .length
+                                                                          //     .toString(),
                                                                           context
                                                                               .watch<dbManager>()
-                                                                              .observationdoc!['BotanicalName'],
+                                                                              .observationdoc['BotanicalName'],
                                                                           style:
                                                                               const TextStyle(
                                                                             fontWeight:
@@ -263,6 +301,25 @@ class _ProjectState extends State<Project> {
                                                                         ),
                                                                       ),
                                                                     ),
+                                                                    Visibility(
+                                                                      visible: projectdata[
+                                                                              'uid'] ==
+                                                                          context
+                                                                              .watch<dbManager>()
+                                                                              .currentobserverdoc['uid'],
+                                                                      child:
+                                                                          Align(
+                                                                        alignment:
+                                                                            Alignment.bottomRight,
+                                                                        child: IconButton(
+                                                                            onPressed: (() => FirebaseFirestore.instance.collection('observers').doc(Provider.of<dbManager>(context, listen: false).projectdoc['admin']).collection("projects").doc(Projid).update({
+                                                                                  "observationList": FieldValue.arrayRemove([
+                                                                                    Projectid
+                                                                                  ])
+                                                                                })),
+                                                                            icon: Icon(Icons.delete_sharp)),
+                                                                      ),
+                                                                    )
                                                                     // Padding(
                                                                     //   padding: const EdgeInsets.only(right: 281, top: 5),
                                                                     //   child: Text(
@@ -289,17 +346,17 @@ class _ProjectState extends State<Project> {
                               shrinkWrap: true,
                               itemCount: context
                                   .watch<dbManager>()
-                                  .projectdoc!['memberList']
+                                  .projectdoc['memberList']
                                   .length,
                               itemBuilder: ((context, findex) {
                                 List checkList = context
                                     .watch<dbManager>()
-                                    .projectdoc!['memberList'];
+                                    .projectdoc['memberList'];
 
                                 return StreamBuilder(
                                     stream: FirebaseFirestore.instance
                                         .collection('observers')
-                                        .where('name',
+                                        .where('uid',
                                             isEqualTo: checkList[findex])
                                         .snapshots(),
                                     builder: (BuildContext context,
@@ -317,36 +374,72 @@ class _ProjectState extends State<Project> {
                                                 snapshot.data!.docs[index];
                                             return Card(
                                               child: ListTile(
-                                                leading: const Image(
-                                                  width: 50,
-                                                  image: AssetImage(
-                                                      'assets/Image/splash.png'),
-                                                ), // Ink.image
+                                                  leading: const Image(
+                                                    width: 50,
+                                                    image: AssetImage(
+                                                        'assets/Image/splash.png'),
+                                                  ), // Ink.image
 
-                                                title: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        projectdata['name'],
-                                                        style: const TextStyle(
-                                                            fontSize: 18),
-                                                      ),
-                                                      Text(
-                                                        "Rank: ${index + 1}",
-                                                        style: const TextStyle(
-                                                            fontSize: 12),
-                                                      )
-                                                    ]),
-
-                                                trailing: Text(
-                                                  projectdata['noObservation']
-                                                      .toString(),
-                                                  style: const TextStyle(
-                                                      fontSize: 16),
-                                                ),
-                                              ),
+                                                  title: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          projectdata['name'],
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 18),
+                                                        ),
+                                                        Text(
+                                                          "Rank: ${index + 1}",
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 12),
+                                                        )
+                                                      ]),
+                                                  trailing: Visibility(
+                                                    visible: context
+                                                                    .watch<
+                                                                        dbManager>()
+                                                                    .projectdoc[
+                                                                'admin'] !=
+                                                            projectdata[
+                                                                'uid'] &&
+                                                        context
+                                                                    .watch<
+                                                                        dbManager>()
+                                                                    .projectdoc[
+                                                                'admin'] ==
+                                                            context
+                                                                .watch<
+                                                                    dbManager>()
+                                                                .currentobserverdoc['uid'],
+                                                    child: IconButton(
+                                                      icon: Icon(
+                                                          Icons.person_remove),
+                                                      onPressed: (() =>
+                                                          FirebaseFirestore
+                                                              .instance
+                                                              .collection(
+                                                                  'observers')
+                                                              .doc(Provider.of<
+                                                                          dbManager>(
+                                                                      context,
+                                                                      listen:
+                                                                          false)
+                                                                  .projectdoc['admin'])
+                                                              .collection("projects")
+                                                              .doc(Projid)
+                                                              .update({
+                                                            "memberList":
+                                                                FieldValue
+                                                                    .arrayRemove([
+                                                              projectdata['uid']
+                                                            ])
+                                                          })),
+                                                    ),
+                                                  )),
                                             );
                                           },
                                         );

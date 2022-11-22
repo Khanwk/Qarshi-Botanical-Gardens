@@ -47,7 +47,7 @@ class _StartState extends State<Start> {
           title: 'Home',
           activeColorPrimary: CupertinoColors.systemRed,
           inactiveColorPrimary: CupertinoColors.systemGrey,
-          icon: const Icon(CupertinoIcons.home)),
+          icon: const Icon(Icons.home)),
       // PersistentBottomNavBarItem(
       //     title: 'Search',
       //     activeColorPrimary: CupertinoColors.systemRed,
@@ -57,7 +57,7 @@ class _StartState extends State<Start> {
           activeColorPrimary: CupertinoColors.systemRed,
           inactiveColorPrimary: CupertinoColors.systemGrey,
           icon: const Icon(
-            CupertinoIcons.add,
+            Icons.add,
             color: Colors.white,
           )),
       // PersistentBottomNavBarItem(
@@ -70,7 +70,7 @@ class _StartState extends State<Start> {
           title: 'Profile',
           activeColorPrimary: CupertinoColors.systemRed,
           inactiveColorPrimary: CupertinoColors.systemGrey,
-          icon: const Icon(CupertinoIcons.person)),
+          icon: const Icon(Icons.person)),
     ];
   }
 

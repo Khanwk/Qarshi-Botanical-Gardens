@@ -1,14 +1,19 @@
 // ignore_for_file: file_names, non_constant_identifier_names
 
+import 'dart:convert';
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart%20';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:http/http.dart' as http;
 
 class ResearcherAddNew extends StatefulWidget {
   const ResearcherAddNew({Key? key}) : super(key: key);
@@ -26,35 +31,45 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
     'Add Observation',
     'Create Project',
   ];
+  var itemsImages = [
+    'leaf',
+    'flower',
+    'fruit',
+    'bark',
+    'auto',
+  ];
+  String? dropdownvalueImage1 = "auto";
+  String? dropdownvalueImage2 = "auto";
+  String? dropdownvalueImage3 = "auto";
   TextEditingController textEditingController = TextEditingController();
 
-  final TextEditingController _BotanicalName = TextEditingController();
-  final TextEditingController _LocalName = TextEditingController();
-  final TextEditingController _EnglishName = TextEditingController();
-  final TextEditingController _Family = TextEditingController();
-  final TextEditingController _Description = TextEditingController();
-  final TextEditingController _PlantType = TextEditingController();
-  final TextEditingController _LifeSpan = TextEditingController();
-  final TextEditingController _BloomingPeriod = TextEditingController();
-  final TextEditingController _PlantHeight = TextEditingController();
-  final TextEditingController _PlantSpread = TextEditingController();
-  final TextEditingController _Habitat = TextEditingController();
-  final TextEditingController _FlowerShape = TextEditingController();
-  final TextEditingController _FlowerColour = TextEditingController();
-  final TextEditingController _LeafType = TextEditingController();
-  final TextEditingController _FruitType = TextEditingController();
-  final TextEditingController _FruitColor = TextEditingController();
-  final TextEditingController _RootType = TextEditingController();
-  final TextEditingController _SunLight = TextEditingController();
-  final TextEditingController _Temperature = TextEditingController();
-  final TextEditingController _Soil = TextEditingController();
-  final TextEditingController _Water = TextEditingController();
-  final TextEditingController _Propagation = TextEditingController();
-  final TextEditingController _Inflorescense = TextEditingController();
-  final TextEditingController _LeafColor = TextEditingController();
-  final TextEditingController _StemShape = TextEditingController();
-  final TextEditingController _projectName = TextEditingController();
-  final TextEditingController _projectDescription = TextEditingController();
+  TextEditingController _BotanicalName = TextEditingController();
+  TextEditingController _LocalName = TextEditingController();
+  TextEditingController _EnglishName = TextEditingController();
+  TextEditingController _Family = TextEditingController();
+  TextEditingController _Description = TextEditingController();
+  TextEditingController _PlantType = TextEditingController();
+  TextEditingController _LifeSpan = TextEditingController();
+  TextEditingController _BloomingPeriod = TextEditingController();
+  TextEditingController _PlantHeight = TextEditingController();
+  TextEditingController _PlantSpread = TextEditingController();
+  TextEditingController _Habitat = TextEditingController();
+  TextEditingController _FlowerShape = TextEditingController();
+  TextEditingController _FlowerColour = TextEditingController();
+  TextEditingController _LeafType = TextEditingController();
+  TextEditingController _FruitType = TextEditingController();
+  TextEditingController _FruitColor = TextEditingController();
+  TextEditingController _RootType = TextEditingController();
+  TextEditingController _SunLight = TextEditingController();
+  TextEditingController _Temperature = TextEditingController();
+  TextEditingController _Soil = TextEditingController();
+  TextEditingController _Water = TextEditingController();
+  TextEditingController _Propagation = TextEditingController();
+  TextEditingController _Inflorescense = TextEditingController();
+  TextEditingController _LeafColor = TextEditingController();
+  TextEditingController _StemShape = TextEditingController();
+  TextEditingController _projectName = TextEditingController();
+  TextEditingController _projectDescription = TextEditingController();
 
   // ignore: non_constant_identifier_names
   String Address = "";
@@ -93,6 +108,76 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
         desiredAccuracy: LocationAccuracy.high);
   }
 
+  var data = {};
+  bool showSpinner = false;
+  Future<void> uploadImage(String type1, String type2, String type3) async {
+    setState(() {
+      // showSpinner = true;
+    });
+
+    var stream = http.ByteStream(image1!.openRead());
+    stream.cast();
+    var stream2 = http.ByteStream(image1!.openRead());
+    stream2.cast();
+    var stream3 = http.ByteStream(image1!.openRead());
+    stream3.cast();
+
+    var length = await image1!.length();
+
+    var uri = Uri.parse(
+        "https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=true&lang=en&api-key=2b10CIppBiSiXgbZTDEvMfRAVu");
+
+    var request = http.MultipartRequest('POST', uri);
+    if (image1 != null && image2 != null && image3 != null) {
+      request.fields['organs'] = type1;
+      request.files
+          .add(await http.MultipartFile.fromPath("images", image1!.path));
+      request.fields['organs'] = type2;
+      request.files
+          .add(await http.MultipartFile.fromPath("images", image2!.path));
+      request.fields['organs'] = type3;
+      request.files
+          .add(await http.MultipartFile.fromPath("images", image3!.path));
+    } else if (image2 == null && image3 == null) {
+      request.fields['organs'] = type1;
+      request.files
+          .add(await http.MultipartFile.fromPath("images", image1!.path));
+    } else if (image3 == null) {
+      request.fields['organs'] = type1;
+      request.files
+          .add(await http.MultipartFile.fromPath("images", image1!.path));
+      request.fields['organs'] = type2;
+      request.files
+          .add(await http.MultipartFile.fromPath("images", image2!.path));
+    } else {
+      Fluttertoast.showToast(
+          msg: 'No image Found',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 13.0);
+    }
+
+    // var multiport =;
+
+    var response1 = await request.send();
+    var response = await http.Response.fromStream(response1);
+
+    // print(response1.stream.toString());
+    if (response1.statusCode == 200) {
+      data = jsonDecode(response.body);
+      setState(() {
+        showSpinner = false;
+      });
+    } else {
+      setState(() {
+        showSpinner = false;
+      });
+    }
+  }
+
   // ignore: non_constant_identifier_names
   Future<void> GetAddressFromLatLong(Position position) async {
     List<Placemark> placemarks =
@@ -106,10 +191,14 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
     });
   }
 
+  String url1 = "";
+  String url2 = "";
+  String url3 = "";
+
   // ignore: non_constant_identifier_names
   Future pickImage(source, image, int NoOFPic) async {
     try {
-      final image = await ImagePicker().pickImage(source: source);
+      image = await ImagePicker().pickImage(source: source);
       if (image == null) return;
 
       final imageTemp = File(image.path);
@@ -169,6 +258,99 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                   }),
             ),
             Visibility(
+              visible: dropdownvalue != null,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Visibility(
+                    visible: dropdownvalue == 'Add Observation',
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: ElevatedButton(
+                          child: Text(
+                            "Auto-Fill",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                              primary: Colors.white, elevation: 0),
+                          onPressed: (() async {
+                            if (image1 != null) {
+                              uploadImage(
+                                  dropdownvalueImage1.toString(),
+                                  dropdownvalueImage2.toString(),
+                                  dropdownvalueImage3.toString());
+                              _BotanicalName = TextEditingController(
+                                  text: await data["results"][0]["species"]
+                                      ["scientificName"]);
+                              _EnglishName = TextEditingController(
+                                  text: await data["results"][0]["species"]
+                                          ["commonNames"]
+                                      .toString());
+                              _Family = TextEditingController(
+                                  text: await data["results"][0]["species"]
+                                          ["family"]['scientificName']
+                                      .toString());
+                            } else {
+                              Fluttertoast.showToast(
+                                  msg: 'No image Found',
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.red,
+                                  textColor: Colors.white,
+                                  fontSize: 13.0);
+                            }
+                          })),
+                    ),
+                  ),
+                  Align(
+                      alignment: Alignment.topRight,
+                      child: ElevatedButton(
+                          child: Text(
+                            "Clear all",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                              primary: Colors.white, elevation: 0),
+                          onPressed: (() {
+                            _projectDescription.clear();
+                            _projectName.clear();
+                            setState(() {
+                              image1 = null;
+                              image2 = null;
+                              image3 = null;
+                            });
+
+                            _BotanicalName.clear();
+                            _LocalName.clear();
+                            _EnglishName.clear();
+                            _Family.clear();
+                            _Description.clear();
+                            _PlantType.clear();
+                            _LifeSpan.clear();
+                            _BloomingPeriod.clear();
+                            _PlantHeight.clear();
+                            _PlantSpread.clear();
+                            _Habitat.clear();
+                            _FlowerShape.clear();
+                            _FlowerColour.clear();
+                            _LeafType.clear();
+                            _FruitType.clear();
+                            _FruitColor.clear();
+                            _RootType.clear();
+                            _SunLight.clear();
+                            _Temperature.clear();
+                            _Soil.clear();
+                            _Water.clear();
+                            _Propagation.clear();
+                            _Inflorescense.clear();
+                            _LeafColor.clear();
+                            _StemShape.clear();
+                          }))),
+                ],
+              ),
+            ),
+            Visibility(
                 visible: dropdownvalue == 'Create Project',
                 child: Column(
                   children: [
@@ -198,11 +380,13 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                                   .collection('observers')
                                   .doc(userid)
                                   .collection('projects')
-                                  .doc(_projectName.text)
+                                  .doc()
                                   .set({
                                 'ProjectName': _projectName.text,
                                 'ProjectDesc': _projectDescription.text,
-                                'admin': true
+                                'admin': userid,
+                                'memberList': [userid],
+                                'observationList': []
                               });
                               _projectDescription.clear();
                               _projectName.clear();
@@ -221,9 +405,6 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                     )
                   ],
                 )),
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.05,
-            ),
             Visibility(
                 visible: dropdownvalue == 'Add Observation',
                 child: Column(
@@ -234,95 +415,128 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                         Padding(
                           padding: EdgeInsets.only(
                               left: MediaQuery.of(context).size.width * 0.065),
-                          child: Visibility(
-                            visible: image1 == null,
-                            child: SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.1,
-                              width: MediaQuery.of(context).size.width * 0.25,
-                              child: ElevatedButton(
-                                child: const Icon(Icons.add_a_photo),
-                                onPressed: () =>
-                                    pickImage(ImageSource.camera, image1, 1),
-                                style: ElevatedButton.styleFrom(
-                                    foregroundColor: Colors.red,
-                                    backgroundColor: Colors.white,
-                                    side: const BorderSide(
-                                      width: 2,
-                                      color: Colors.black,
-                                    )),
+                          child: Column(
+                            children: [
+                              Visibility(
+                                visible: image1 == null,
+                                child: SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.1,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.25,
+                                  child: ElevatedButton(
+                                    child: const Icon(Icons.add_a_photo),
+                                    onPressed: () {
+                                      pickImage(ImageSource.camera, image1, 1);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                        primary: Colors.red,
+                                        // backgroundColor: Colors.white,
+                                        side: const BorderSide(
+                                          width: 2,
+                                          color: Colors.black,
+                                        )),
+                                  ),
+                                ),
+                                // ignore: sized_box_for_whitespace
+                                replacement: Container(
+                                    height: MediaQuery.of(context).size.height *
+                                        0.1,
+                                    width: MediaQuery.of(context).size.width *
+                                        0.25,
+                                    child: image1 == null
+                                        ? const Text('No image to show')
+                                        : Image.file(image1!)),
                               ),
-                            ),
-                            // ignore: sized_box_for_whitespace
-                            replacement: Container(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.1,
-                                width: MediaQuery.of(context).size.width * 0.25,
-                                child: image1 == null
-                                    ? const Text('No image to show')
-                                    : Image.file(image1!)),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(
-                              left: MediaQuery.of(context).size.width * 0.065),
-                          child: Visibility(
-                            visible: image2 == null,
-                            child: SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.1,
-                              width: MediaQuery.of(context).size.width * 0.25,
-                              child: ElevatedButton(
-                                child: const Icon(Icons.add_a_photo),
-                                onPressed: () {
-                                  pickImage(ImageSource.camera, image2, 2);
+                              DropdownButton(
+                                value: dropdownvalueImage1,
+                                icon: const Icon(Icons.keyboard_arrow_down),
+                                items: itemsImages.map((String items) {
+                                  return DropdownMenuItem(
+                                    value: items,
+                                    child: Text(items),
+                                  );
+                                }).toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    dropdownvalueImage1 = newValue!;
+                                  });
                                 },
-                                style: ElevatedButton.styleFrom(
-                                    foregroundColor: Colors.red,
-                                    backgroundColor: Colors.white,
-                                    side: const BorderSide(
-                                      width: 2,
-                                      color: Colors.black,
-                                    )),
                               ),
-                            ),
-                            // ignore: sized_box_for_whitespace
-                            replacement: Container(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.1,
-                                width: MediaQuery.of(context).size.width * 0.25,
-                                child: image2 == null
-                                    ? const Text('No image to show')
-                                    : Image.file(image2!)),
+                            ],
                           ),
                         ),
                         Padding(
                           padding: EdgeInsets.only(
                               left: MediaQuery.of(context).size.width * 0.065),
                           child: Visibility(
-                            visible: image3 == null,
-                            child: SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.1,
-                              width: MediaQuery.of(context).size.width * 0.25,
-                              child: ElevatedButton(
-                                child: const Icon(Icons.add_a_photo),
-                                onPressed: () =>
-                                    pickImage(ImageSource.camera, image3, 3),
-                                style: ElevatedButton.styleFrom(
-                                    foregroundColor: Colors.red,
-                                    backgroundColor: Colors.white,
-                                    side: const BorderSide(
-                                      width: 2,
-                                      color: Colors.black,
-                                    )),
-                              ),
-                            ),
-                            // ignore: sized_box_for_whitespace
-                            replacement: Container(
+                            visible: image1 != null,
+                            child: Visibility(
+                              visible: image2 == null,
+                              child: SizedBox(
                                 height:
                                     MediaQuery.of(context).size.height * 0.1,
                                 width: MediaQuery.of(context).size.width * 0.25,
-                                child: image3 == null
-                                    ? const Text('No image to show')
-                                    : Image.file(image3!)),
+                                child: ElevatedButton(
+                                  child: const Icon(Icons.add_a_photo),
+                                  onPressed: () {
+                                    pickImage(ImageSource.camera, image2, 2);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                      primary: Colors.red,
+                                      // backgroundColor: Colors.white,
+                                      side: const BorderSide(
+                                        width: 2,
+                                        color: Colors.black,
+                                      )),
+                                ),
+                              ),
+                              // ignore: sized_box_for_whitespace
+                              replacement: Container(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.1,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.25,
+                                  child: image2 == null
+                                      ? const Text('No image to show')
+                                      : Image.file(image2!)),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(
+                              left: MediaQuery.of(context).size.width * 0.065),
+                          child: Visibility(
+                            visible: image2 != null && image1 != null,
+                            child: Visibility(
+                              visible: image3 == null,
+                              child: SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.1,
+                                width: MediaQuery.of(context).size.width * 0.25,
+                                child: ElevatedButton(
+                                  child: const Icon(Icons.add_a_photo),
+                                  onPressed: () =>
+                                      pickImage(ImageSource.camera, image3, 3),
+                                  style: ElevatedButton.styleFrom(
+                                      primary: Colors.red,
+                                      // backgroundColor: Colors.white,
+                                      side: const BorderSide(
+                                        width: 2,
+                                        color: Colors.black,
+                                      )),
+                                ),
+                              ),
+                              // ignore: sized_box_for_whitespace
+                              replacement: Container(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.1,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.25,
+                                  child: image3 == null
+                                      ? const Text('No image to show')
+                                      : Image.file(image3!)),
+                            ),
                           ),
                         ),
                       ],
@@ -473,79 +687,133 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ElevatedButton(
-                            onPressed: () {
-                              final FirebaseAuth auth = FirebaseAuth.instance;
-                              final User? user = auth.currentUser;
-                              final userid = user!.uid;
-                              FirebaseFirestore.instance
-                                  .collection('observers')
-                                  .doc(userid)
-                                  .collection('observations')
-                                  .doc()
-                                  .set({
-                                'BotanicalName': _BotanicalName.text,
-                                'LocalName': _LocalName.text,
-                                'EnglishName': _EnglishName.text,
-                                'Family': _Family.text,
-                                'Description': _Description.text,
-                                'location': textEditingController.text,
-                                'PlantType': _PlantType.text,
-                                'LifeSpan': _LifeSpan.text,
-                                'BloomingPeriod': _BloomingPeriod.text,
-                                'PlantHeight': _PlantHeight.text,
-                                'PlantSpread': _PlantSpread.text,
-                                'Habitat': _Habitat.text,
-                                'FlowerShape': _FlowerShape.text,
-                                'FlowerColour': _FlowerColour.text,
-                                'LeafType': _LeafType.text,
-                                'FruitType': _FruitType.text,
-                                'FruitColor': _FlowerColour.text,
-                                'RootType': _RootType.text,
-                                'Inflorescense': _Inflorescense.text,
-                                'LeafColor': _LeafColor.text,
-                                'StemShape': _StemShape.text,
-                                'SunLight': _SunLight.text,
-                                'Temperature': _Temperature.text,
-                                'Soil': _Soil.text,
-                                'Water': _Water.text,
-                                'Propagation': _Propagation.text,
-                                'Date': DateTime.now()
-                              });
+                        Visibility(
+                          visible: image1 != null,
+                          child: ElevatedButton(
+                              onPressed: () async {
+                                final FirebaseAuth auth = FirebaseAuth.instance;
+                                final User? user = auth.currentUser;
+                                final userid = user!.uid;
+                                int max = DateTime.now().microsecond;
+                                int min = DateTime.now().millisecond;
+                                final String docid = (max * min).toString();
+                                if (image1 == null) {
+                                } else {
+                                  final ref = FirebaseStorage.instance
+                                      .ref()
+                                      .child("observations")
+                                      .child(docid)
+                                      .child(docid + "1");
+                                  await ref.putFile(image1!);
 
-                              setState(() {
-                                image1 = null;
-                                image2 = null;
-                                image3 = null;
-                              });
+                                  url1 = await ref.getDownloadURL();
+                                }
+                                if (image1 == null) {
+                                } else {
+                                  final ref = FirebaseStorage.instance
+                                      .ref()
+                                      .child("observations")
+                                      .child(docid)
+                                      .child(docid + "2");
+                                  await ref.putFile(image1!);
 
-                              _BotanicalName.clear();
-                              _LocalName.clear();
-                              _EnglishName.clear();
-                              _Family.clear();
-                              _Description.clear();
-                              _PlantType.clear();
-                              _LifeSpan.clear();
-                              _BloomingPeriod.clear();
-                              _PlantHeight.clear();
-                              _PlantSpread.clear();
-                              _Habitat.clear();
-                              _FlowerShape.clear();
-                              _FlowerColour.clear();
-                              _LeafType.clear();
-                              _FruitType.clear();
-                              _FruitColor.clear();
-                              _RootType.clear();
-                              _SunLight.clear();
-                              _Temperature.clear();
-                              _Soil.clear();
-                              _Water.clear();
-                              _Propagation.clear();
-                              _Inflorescense.clear();
-                              _LeafColor.clear();
-                              _StemShape.clear();
-                            },
-                            child: const Text('Save')),
+                                  url2 = await ref.getDownloadURL();
+                                }
+                                if (image1 == null) {
+                                } else {
+                                  final ref = FirebaseStorage.instance
+                                      .ref()
+                                      .child("observations")
+                                      .child(docid)
+                                      .child(docid + "3");
+                                  await ref.putFile(image1!);
+
+                                  url3 = await ref.getDownloadURL();
+                                }
+
+                                // String url1 = getImage(docid, "1");
+                                // String url2 = getImage(docid, "2");
+                                // String url3 = getImage(docid, "3");
+
+                                await FirebaseFirestore.instance
+                                    .collection('observers')
+                                    .doc(userid)
+                                    .collection('observations')
+                                    .doc(docid)
+                                    .set({
+                                  'uid': docid,
+                                  'image1': url1,
+                                  'image2': url2,
+                                  'image3': url3,
+                                  'BotanicalName': _BotanicalName.text,
+                                  'LocalName': _LocalName.text,
+                                  'EnglishName': _EnglishName.text,
+                                  'Family': _Family.text,
+                                  'Description': _Description.text,
+                                  'location': textEditingController.text,
+                                  'PlantType': _PlantType.text,
+                                  'LifeSpan': _LifeSpan.text,
+                                  'BloomingPeriod': _BloomingPeriod.text,
+                                  'PlantHeight': _PlantHeight.text,
+                                  'PlantSpread': _PlantSpread.text,
+                                  'Habitat': _Habitat.text,
+                                  'FlowerShape': _FlowerShape.text,
+                                  'FlowerColour': _FlowerColour.text,
+                                  'LeafType': _LeafType.text,
+                                  'FruitType': _FruitType.text,
+                                  'FruitColor': _FlowerColour.text,
+                                  'RootType': _RootType.text,
+                                  'Inflorescense': _Inflorescense.text,
+                                  'LeafColor': _LeafColor.text,
+                                  'StemShape': _StemShape.text,
+                                  'SunLight': _SunLight.text,
+                                  'Temperature': _Temperature.text,
+                                  'Soil': _Soil.text,
+                                  'Water': _Water.text,
+                                  'Propagation': _Propagation.text,
+                                  'Date': DateTime.now()
+                                });
+                                FirebaseFirestore.instance
+                                    .collection('observers')
+                                    .doc(userid)
+                                    .update({
+                                  "noObservation": FieldValue.increment(1)
+                                });
+
+                                setState(() {
+                                  image1 = null;
+                                  image2 = null;
+                                  image3 = null;
+                                });
+
+                                _BotanicalName.clear();
+                                _LocalName.clear();
+                                _EnglishName.clear();
+                                _Family.clear();
+                                _Description.clear();
+                                _PlantType.clear();
+                                _LifeSpan.clear();
+                                _BloomingPeriod.clear();
+                                _PlantHeight.clear();
+                                _PlantSpread.clear();
+                                _Habitat.clear();
+                                _FlowerShape.clear();
+                                _FlowerColour.clear();
+                                _LeafType.clear();
+                                _FruitType.clear();
+                                _FruitColor.clear();
+                                _RootType.clear();
+                                _SunLight.clear();
+                                _Temperature.clear();
+                                _Soil.clear();
+                                _Water.clear();
+                                _Propagation.clear();
+                                _Inflorescense.clear();
+                                _LeafColor.clear();
+                                _StemShape.clear();
+                              },
+                              child: const Text('Save')),
+                        ),
                         SizedBox(
                           width: MediaQuery.of(context).size.width * 0.07,
                         ),

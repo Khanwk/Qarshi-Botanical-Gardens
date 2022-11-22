@@ -97,16 +97,15 @@ class _ProjectAddState extends State<ProjectAdd> {
                           .map((QueryDocumentSnapshot data) {
                         String name = data['name'];
                         String uid = data['uid'];
-                        List member = context
-                            .watch<dbManager>()
-                            .projectdoc!['memberList'];
+                        List member =
+                            context.watch<dbManager>().projectdoc['memberList'];
                         List RequestList = data['ProjectRequest'];
                         String senderName = context
                             .watch<dbManager>()
-                            .currentobserverdoc!['name'];
+                            .currentobserverdoc['name'];
                         String senderuid = context
                             .watch<dbManager>()
-                            .currentobserverdoc!['uid'];
+                            .currentobserverdoc['uid'];
                         return Card(
                           child: ListTile(
                               leading: const Image(
@@ -216,7 +215,7 @@ class _ProjectAddState extends State<ProjectAdd> {
                             .snapshots(),
                         builder: (BuildContext context,
                             AsyncSnapshot<QuerySnapshot> Projectssnapshot) {
-                          if (!snapshot.hasData) {
+                          if (!Projectssnapshot.hasData) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
@@ -277,7 +276,7 @@ class _ProjectAddState extends State<ProjectAdd> {
                                             child: Text(
                                               context
                                                       .watch<dbManager>()
-                                                      .observationdoc![
+                                                      .observationdoc[
                                                   'BotanicalName'],
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.bold,
@@ -294,7 +293,9 @@ class _ProjectAddState extends State<ProjectAdd> {
                                             padding: const EdgeInsets.only(
                                                 top: 5, left: 10),
                                             child: Text(
-                                              obName,
+                                              obName
+                                              // valid[0]
+                                              ,
                                               style:
                                                   const TextStyle(fontSize: 16),
                                             ),
@@ -313,7 +314,10 @@ class _ProjectAddState extends State<ProjectAdd> {
                                           ),
                                         ),
                                         Visibility(
-                                          // visible: checkList.contains(obName),
+                                          // visible: context
+                                          //     .watch<dbManager>()
+                                          //     .projectdoc['observationList']
+                                          //     .contains(obName),
                                           child: Align(
                                             alignment: Alignment.centerRight,
                                             child: IconButton(
@@ -324,16 +328,20 @@ class _ProjectAddState extends State<ProjectAdd> {
                                                     FirebaseAuth.instance;
                                                 final User? user =
                                                     auth.currentUser;
+                                                print(Projectid);
                                                 final userid = user!.uid;
                                                 FirebaseFirestore.instance
                                                     .collection('observers')
-                                                    .doc(userid)
+                                                    .doc(Provider.of<dbManager>(
+                                                            context,
+                                                            listen: false)
+                                                        .projectdoc['admin'])
                                                     .collection('projects')
                                                     .doc(valid[0])
                                                     .update({
                                                   "observationList":
                                                       FieldValue.arrayUnion(
-                                                          [Projectid])
+                                                          [Projectid].toList())
                                                 });
                                               },
                                             ),

@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:provider/provider.dart';
 import 'package:qarshi_app/Observer/userpage.dart';
 import 'package:qarshi_app/Researchers/AddNew.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:qarshi_app/accounts/account.dart';
-
 import '../services/RouteManager.dart';
 
 class ResearcherHome extends StatefulWidget {
@@ -42,7 +40,7 @@ class _ResearcherHomeState extends State<ResearcherHome> {
           activeColorPrimary: CupertinoColors.systemRed,
           inactiveColorPrimary: CupertinoColors.systemGrey,
           icon: const Icon(
-            CupertinoIcons.home,
+            Icons.home,
           )),
       // PersistentBottomNavBarItem(
       //     title: 'Search',
@@ -53,7 +51,7 @@ class _ResearcherHomeState extends State<ResearcherHome> {
           activeColorPrimary: CupertinoColors.systemRed,
           inactiveColorPrimary: CupertinoColors.systemGrey,
           icon: const Icon(
-            CupertinoIcons.add,
+            Icons.add,
             color: Colors.white,
           )),
       // PersistentBottomNavBarItem(
@@ -65,7 +63,7 @@ class _ResearcherHomeState extends State<ResearcherHome> {
           title: 'Profile',
           activeColorPrimary: CupertinoColors.systemRed,
           inactiveColorPrimary: CupertinoColors.systemGrey,
-          icon: const Icon(CupertinoIcons.person)),
+          icon: const Icon(Icons.person)),
     ];
   }
 }
