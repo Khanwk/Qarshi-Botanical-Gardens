@@ -178,7 +178,7 @@ class _HomeState extends State<Home> {
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) =>
-                                                  ForgotPasswordPage()));
+                                                  const ForgotPasswordPage()));
                                     }),
                             ],
                           ),
@@ -258,6 +258,8 @@ class _HomeState extends State<Home> {
                                               .read<dbManager>()
                                               .ChangeCurrentObserverDoc(
                                                   documentSnapshot);
+                                          context.read<dbManager>().ChangeP(
+                                              _passwordController.text.trim());
                                           _emailController.clear();
                                           _passwordController.clear();
 
@@ -303,7 +305,7 @@ class _HomeState extends State<Home> {
                                         fontSize: 13.0);
                                   }
                                 },
-                                child: FittedBox(
+                                child: const FittedBox(
                                   child: Text(
                                     'Sign In',
                                     style: TextStyle(

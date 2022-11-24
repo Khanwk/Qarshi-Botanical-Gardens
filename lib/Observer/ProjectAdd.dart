@@ -51,7 +51,7 @@ class _ProjectAddState extends State<ProjectAdd> {
                       });
                     })),
           ),
-          replacement: Text("Add Observation"),
+          replacement: const Text("Add Observation"),
         ),
         actions: [
           Visibility(
@@ -155,7 +155,7 @@ class _ProjectAddState extends State<ProjectAdd> {
                                   }),
                                 ),
                                 replacement: IconButton(
-                                  icon: Icon(Icons.person_remove_alt_1),
+                                  icon: const Icon(Icons.person_remove_alt_1),
                                   onPressed: (() {
                                     FirebaseFirestore.instance
                                         .collection("observers")
@@ -184,7 +184,7 @@ class _ProjectAddState extends State<ProjectAdd> {
 
                 }
               }),
-          replacement: Align(
+          replacement: const Align(
               alignment: Alignment.center,
               child: Text("Results will be shown here")),
         ),
@@ -321,14 +321,13 @@ class _ProjectAddState extends State<ProjectAdd> {
                                           child: Align(
                                             alignment: Alignment.centerRight,
                                             child: IconButton(
-                                              icon: Icon(Icons.add),
+                                              icon: const Icon(Icons.add),
                                               onPressed: () {
                                                 List addList = [Projectid];
                                                 final FirebaseAuth auth =
                                                     FirebaseAuth.instance;
                                                 final User? user =
                                                     auth.currentUser;
-                                                print(Projectid);
                                                 final userid = user!.uid;
                                                 FirebaseFirestore.instance
                                                     .collection('observers')

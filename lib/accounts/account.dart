@@ -6,8 +6,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart%20' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:qarshi_app/accounts/changePassword.dart';
 import 'package:qarshi_app/authanticate/login.dart';
 import 'package:qarshi_app/services/dbManager.dart';
 import 'package:qarshi_app/Observer/CreateProject.dart';
@@ -26,6 +28,9 @@ class Account extends StatefulWidget {
 }
 
 class _AccountState extends State<Account> {
+  bool edit = false;
+  TextEditingController _nameEdit = TextEditingController();
+
   Future<void> _deleteCacheDir() async {
     final cacheDir = await getTemporaryDirectory();
 
@@ -232,11 +237,11 @@ class _AccountState extends State<Account> {
               child: GestureDetector(
                 onTap: () => FocusScope.of(context).unfocus(),
                 child: Column(
-                  mainAxisSize: MainAxisSize.max,
+                  // mainAxisSize: MainAxisSize.max,
                   children: [
                     Container(
                       width: double.infinity,
-                      height: 230,
+                      height: MediaQuery.of(context).size.height * 0.29,
                       child: Stack(
                         children: [
                           Align(
@@ -473,6 +478,21 @@ class _AccountState extends State<Account> {
                                                       return const Center(
                                                         child:
                                                             CircularProgressIndicator(),
+                                                      );
+                                                    } else if (Projectssnapshot
+                                                            .data!.docs.length <
+                                                        1) {
+                                                      return Padding(
+                                                        padding: EdgeInsets.only(
+                                                            top: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .height *
+                                                                0.2),
+                                                        child: Center(
+                                                          child: Text(
+                                                              "No Observation Yet !"),
+                                                        ),
                                                       );
                                                     } else {
                                                       return ListView.builder(
@@ -717,6 +737,21 @@ class _AccountState extends State<Account> {
                                                         child:
                                                             CircularProgressIndicator(),
                                                       );
+                                                    } else if (Projectssnapshot
+                                                            .data!.docs.length <
+                                                        1) {
+                                                      return Padding(
+                                                        padding: EdgeInsets.only(
+                                                            top: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .height *
+                                                                0.2),
+                                                        child: Center(
+                                                          child: Text(
+                                                              "No Projects Yet !"),
+                                                        ),
+                                                      );
                                                     } else {
                                                       return ListView.builder(
                                                         physics:
@@ -797,7 +832,245 @@ class _AccountState extends State<Account> {
                                           );
                                         }
                                       }),
-                                  Container(),
+                                  SingleChildScrollView(
+                                    child: Column(
+                                      children: [
+                                        Padding(
+                                          padding: EdgeInsets.all(8),
+                                          child: ListTile(
+                                            onTap: null,
+                                            tileColor: const Color.fromARGB(
+                                                255, 255, 255, 255),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10)),
+                                            title: Text(
+                                              context
+                                                  .watch<dbManager>()
+                                                  .currentobserverdoc['name'],
+                                              style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w500),
+                                            ),
+                                            subtitle: Text(context
+                                                .watch<dbManager>()
+                                                .currentobserverdoc['email']),
+                                            trailing: Visibility(
+                                              visible: !edit,
+                                              child: IconButton(
+                                                icon: const Icon(
+                                                    Icons.create_outlined),
+                                                color: const Color.fromARGB(
+                                                    255, 74, 74, 74),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    edit = true;
+                                                  });
+                                                },
+                                              ),
+                                              replacement: IconButton(
+                                                icon: const Icon(Icons.done),
+                                                color: const Color.fromARGB(
+                                                    255, 74, 74, 74),
+                                                onPressed: () {
+                                                  FirebaseFirestore.instance
+                                                      .collection('observers')
+                                                      .doc(Provider.of<
+                                                                      dbManager>(
+                                                                  context,
+                                                                  listen: false)
+                                                              .currentobserverdoc[
+                                                          'uid'])
+                                                      .update({
+                                                    'name': _nameEdit.text
+                                                  });
+                                                  _nameEdit.clear();
+                                                  Fluttertoast.showToast(
+                                                      msg:
+                                                          "Changed, Changes will take place after next login!",
+                                                      toastLength:
+                                                          Toast.LENGTH_SHORT,
+                                                      gravity:
+                                                          ToastGravity.BOTTOM,
+                                                      timeInSecForIosWeb: 1,
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                      textColor: Colors.white,
+                                                      fontSize: 13.0);
+
+                                                  // DocumentSnapshot
+                                                  //     documentSnapshot =
+                                                  //     FirebaseFirestore.instance
+                                                  //         .collection(
+                                                  //             'observers')
+                                                  //         .doc(Provider.of<
+                                                  //                     dbManager>(
+                                                  //                 context,
+                                                  //                 listen: false)
+                                                  //             .currentobserverdoc['uid'])
+                                                  //         .get() as DocumentSnapshot<Object?>;
+                                                  // context
+                                                  //     .read<dbManager>()
+                                                  //     .ChangeCurrentObserverDoc(
+                                                  //         documentSnapshot);
+                                                  setState(() {
+                                                    edit = false;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Center(
+                                          child: Visibility(
+                                            visible: edit,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Container(
+                                                child: TextFormField(
+                                                  controller: _nameEdit,
+                                                  decoration: InputDecoration(
+                                                    labelText: context
+                                                            .watch<dbManager>()
+                                                            .currentobserverdoc[
+                                                        'name'],
+                                                    border:
+                                                        UnderlineInputBorder(),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: ListTile(
+                                            title: Text(
+                                              "Change Password",
+                                              style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontFamily: "Open sans",
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500),
+                                            ),
+                                            leading: Ink(
+                                                // decoration: const ShapeDecoration(
+                                                //   color: Color(0xffD9D9D9),
+                                                //   shape: CircleBorder(),
+                                                // ),
+                                                child: Icon(
+                                              Icons.lock_reset_rounded,
+                                              color: Colors.red,
+                                              size: 25,
+                                            )),
+                                            onTap: () {
+                                              Get.to(() => const ChangePass());
+                                              // Navigator.push(
+                                              //   context,
+                                              //   MaterialPageRoute(
+                                              //     builder: (context) => const Homepage(),
+                                              //   ),
+                                              // );
+                                            },
+                                            tileColor: const Color.fromARGB(
+                                                255, 255, 255, 255),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10)),
+                                            trailing: const Icon(
+                                                Icons.keyboard_arrow_right,
+                                                color: Color.fromARGB(
+                                                    255, 74, 74, 74)),
+                                          ),
+                                        ),
+                                        // visibilityByRole(widgetIsFor, userRole),
+
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: ListTile(
+                                            title: Text(
+                                              "Support",
+                                              style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontFamily: "Open sans",
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500),
+                                            ),
+                                            leading: Ink(
+                                                // decoration: const ShapeDecoration(
+                                                //   color: Color(0xffD9D9D9),
+                                                //   shape: CircleBorder(),
+                                                // ),
+                                                child: Icon(
+                                              Icons.contact_support_outlined,
+                                              color: Colors.red,
+                                              size: 25,
+                                            )),
+                                            onTap: () {
+                                              // Get.to(() => const Support());
+                                              // Navigator.push(
+                                              //   context,
+                                              //   MaterialPageRoute(
+                                              //     builder: (context) => const Homepage(),
+                                              //   ),
+                                              // );
+                                            },
+                                            tileColor: const Color.fromARGB(
+                                                255, 255, 255, 255),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10)),
+                                            trailing: const Icon(
+                                                Icons.keyboard_arrow_right,
+                                                color: Color.fromARGB(
+                                                    255, 74, 74, 74)),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.all(8),
+                                          child: ListTile(
+                                            title: Text(
+                                              "About Us",
+                                              style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontFamily: "Open sans",
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500),
+                                            ),
+                                            leading: Ink(
+                                                // decoration: const ShapeDecoration(
+                                                //   color: Color(0xffD9D9D9),
+                                                //   shape: CircleBorder(),
+                                                // ),
+                                                child: Icon(
+                                              Icons.info_outline,
+                                              color: Colors.red,
+                                              size: 25,
+                                            )),
+                                            onTap: () {
+                                              // Navigator.push(
+                                              //   context,
+                                              //   MaterialPageRoute(
+                                              //     builder: (context) => const Homepage(),
+                                              //   ),
+                                              // );
+                                            },
+                                            tileColor: const Color.fromARGB(
+                                                255, 255, 255, 255),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10)),
+                                            trailing: const Icon(
+                                                Icons.keyboard_arrow_right,
+                                                color: Color.fromARGB(
+                                                    255, 74, 74, 74)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),

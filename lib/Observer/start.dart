@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:provider/provider.dart';
 import 'package:qarshi_app/Researchers/AddNew.dart';
@@ -25,6 +24,7 @@ class _StartState extends State<Start> {
   Widget build(BuildContext context) {
     context.read<ManageRoute>().ChangeUser(role);
     return Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: Colors.white,
         body: PersistentTabView(
           context,

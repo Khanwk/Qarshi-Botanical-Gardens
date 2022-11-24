@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart%20';
-// import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -122,29 +121,36 @@ class _ChatPageState extends State<ChatPage> {
                           final DateTime dateTime = timestamp.toDate();
                           final dateString =
                               DateFormat('K:mm (dd-MM)').format(dateTime);
-                          return Container(
-                            padding: const EdgeInsets.only(
-                                left: 14, right: 14, top: 10, bottom: 10),
-                            child: Align(
-                              alignment: (snapshot.data!.docs[index]
-                                          ['senderid'] !=
-                                      context
-                                          .watch<dbManager>()
-                                          .currentobserverdoc['uid']
-                                  ? Alignment.topLeft
-                                  : Alignment.topRight),
-                              child: GestureDetector(
-                                onLongPress: () {
-                                  PopupMenuButton(
-                                    child: const FlutterLogo(),
-                                    itemBuilder: (context) {
-                                      return <PopupMenuItem>[
-                                        const PopupMenuItem(
-                                            child: Text('Delete'))
-                                      ];
-                                    },
-                                  );
-                                },
+                          return GestureDetector(
+                            onLongPress: () {
+                              PopupMenuButton(
+                                elevation: 20,
+                                enabled: true,
+                                onSelected: (value) {},
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    child: Text("Project"),
+                                    value: "first",
+                                  ),
+                                  const PopupMenuItem(
+                                    child: Text("Observation"),
+                                    value: "Second",
+                                  ),
+                                ],
+                                // ],
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.only(
+                                  left: 14, right: 14, top: 10, bottom: 10),
+                              child: Align(
+                                alignment: (snapshot.data!.docs[index]
+                                            ['senderid'] !=
+                                        context
+                                            .watch<dbManager>()
+                                            .currentobserverdoc['uid']
+                                    ? Alignment.topLeft
+                                    : Alignment.topRight),
                                 child: Column(
                                   children: [
                                     GestureDetector(

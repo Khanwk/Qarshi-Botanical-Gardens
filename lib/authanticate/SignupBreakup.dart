@@ -10,13 +10,15 @@ import 'package:image_picker/image_picker.dart';
 import 'package:qarshi_app/authanticate/login.dart';
 import 'package:firebase_storage/firebase_storage.dart%20' as firebase_storage;
 import 'package:validators/validators.dart';
-import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
+import 'package:email_auth/email_auth.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 
 TextEditingController _email = TextEditingController();
 TextEditingController _password = TextEditingController();
 TextEditingController _firstName = TextEditingController();
 TextEditingController _LastName = TextEditingController();
 TextEditingController _Address = TextEditingController();
+TextEditingController _otp = TextEditingController();
 
 class Email extends StatefulWidget {
   const Email({Key? key}) : super(key: key);
@@ -28,6 +30,8 @@ class Email extends StatefulWidget {
 class _EmailState extends State<Email> {
   // TextEditingController textEditingController = TextEditingController(); //here
   bool isEmailCorrect = false;
+  // bool sent = false;
+  late EmailAuth emailAuth = EmailAuth(sessionName: "Qarshi Botanical Gardens");
 
   dynamic snackBar = SnackBar(
     duration: const Duration(milliseconds: 1500),
@@ -37,92 +41,138 @@ class _EmailState extends State<Email> {
       onPressed: () {},
     ),
   );
+  void sendOTP() async {
+    var res = await emailAuth.sendOtp(
+        recipientMail: _email.text.trim(), otpLength: 5);
+    // if (res) {
+    //   Fluttertoast.showToast(
+    //       msg: "Otp sent!",
+    //       toastLength: Toast.LENGTH_SHORT,
+    //       gravity: ToastGravity.BOTTOM,
+    //       timeInSecForIosWeb: 1,
+    //       backgroundColor: Colors.red,
+    //       textColor: Colors.white,
+    //       fontSize: 13.0);
+    //   setState(() {
+    //     sent = true;
+    //   });
+    // } else {
+    //   Fluttertoast.showToast(
+    //       msg: "Please Check your email, Failed to send OTP!",
+    //       toastLength: Toast.LENGTH_SHORT,
+    //       gravity: ToastGravity.BOTTOM,
+    //       timeInSecForIosWeb: 1,
+    //       backgroundColor: Colors.red,
+    //       textColor: Colors.white,
+    //       fontSize: 13.0);
+    // }
+  }
+
+  shouldpop() {
+    _LastName.clear();
+    _email.clear();
+    _Address.clear();
+    _otp.clear();
+    _password.clear();
+    _firstName.clear();
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        backgroundColor: Colors.redAccent,
-        centerTitle: true,
-        elevation: 2,
-        title: const Text('Sign up Page'),
-        // centerTitle: true,
-        // backgroundColor: Colors.red,
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _email,
-                onChanged: (val) {
-                  setState(() {
-                    isEmailCorrect = isEmail(val);
-                  });
-                },
-                style: const TextStyle(color: Colors.black),
-                showCursor: true,
-                decoration: InputDecoration(
-                  // labelText: "Email",
-                  hintText: "somthing@email.com",
-                  hintStyle: const TextStyle(color: Colors.grey, fontSize: 15),
-                  labelStyle: const TextStyle(
+    return WillPopScope(
+      onWillPop: () async {
+        return await shouldpop();
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        appBar: AppBar(
+          backgroundColor: Colors.redAccent,
+          centerTitle: true,
+          elevation: 2,
+          title: const Text('Sign up Page'),
+          // centerTitle: true,
+          // backgroundColor: Colors.red,
+        ),
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: _email,
+                  onChanged: (val) {
+                    setState(() {
+                      isEmailCorrect = isEmail(val);
+                    });
+                  },
+                  style: const TextStyle(color: Colors.black),
+                  showCursor: true,
+                  decoration: InputDecoration(
+                    // labelText: "Email",
+                    hintText: "somthing@email.com",
+                    hintStyle:
+                        const TextStyle(color: Colors.grey, fontSize: 15),
+                    labelStyle: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w300),
+                    prefixIcon: const Icon(
+                      Icons.email_outlined,
                       color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w300),
-                  prefixIcon: const Icon(
-                    Icons.email_outlined,
-                    color: Colors.black,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                        borderSide:
+                            const BorderSide(color: Colors.red, width: 1),
+                        borderRadius: BorderRadius.circular(5)),
+                    floatingLabelStyle: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w300),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          color: isEmailCorrect == false
+                              ? Colors.grey
+                              : Colors.red,
+                          width: 2),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.red, width: 1),
-                      borderRadius: BorderRadius.circular(5)),
-                  floatingLabelStyle: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w300),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Align(
+                alignment: Alignment.bottomRight,
+                child: ElevatedButton(
+                  onPressed: isEmailCorrect == false
+                      ? null
+                      : (() {
+                          // ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                          sendOTP();
+                          // if (sent) {
+                          Get.to(const Verify());
+                          // }
+                        }),
+                  style: ButtonStyle(
+                    backgroundColor: isEmailCorrect == false
+                        ? MaterialStateProperty.all(
+                            const Color.fromARGB(255, 255, 255, 255))
+                        : MaterialStateProperty.all(Colors.white),
+                  ),
+                  child: Text(
+                    'Send Otp',
+                    style: TextStyle(
                         color:
-                            isEmailCorrect == false ? Colors.grey : Colors.red,
-                        width: 2),
-                    borderRadius: BorderRadius.circular(15),
+                            isEmailCorrect == false ? Colors.grey : Colors.red),
                   ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Align(
-              alignment: Alignment.bottomRight,
-              child: ElevatedButton(
-                onPressed: isEmailCorrect == false
-                    ? null
-                    : (() {
-                        // ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
-                        Get.to(const Verify());
-                      }),
-                style: ButtonStyle(
-                  backgroundColor: isEmailCorrect == false
-                      ? MaterialStateProperty.all(
-                          const Color.fromARGB(255, 255, 255, 255))
-                      : MaterialStateProperty.all(Colors.white),
-                ),
-                child: Text(
-                  'Next',
-                  style: TextStyle(
-                      color:
-                          isEmailCorrect == false ? Colors.grey : Colors.red),
-                ),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -141,6 +191,46 @@ class _VerifyState extends State<Verify> {
 
   @override
   Widget build(BuildContext context) {
+    bool valid = false;
+    EmailAuth emailAuth = EmailAuth(sessionName: "Qarshi Botanical Gardens");
+
+    // String otp = "";
+    // @override
+    // void initState() {
+    //   super.initState();
+    //   emailAuth = EmailAuth(sessionName: "Email Verification");
+    // }
+
+    void verify() {
+      var res = emailAuth.validateOtp(
+          recipientMail: _email.text.trim(), userOtp: _otp.text);
+
+      if (res) {
+        setState(() {
+          valid = true;
+        });
+
+        // });
+        Fluttertoast.showToast(
+            msg: "Verified",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 13.0);
+      } else {
+        Fluttertoast.showToast(
+            msg: "Invalid Otp",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 13.0);
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sign up Page'),
@@ -151,19 +241,100 @@ class _VerifyState extends State<Verify> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            OtpTextField(
-              numberOfFields: 5,
-              enabledBorderColor: const Color.fromARGB(255, 151, 151, 151),
-              focusedBorderColor: const Color.fromARGB(255, 225, 64, 64),
-              //set to true to show as box or false to show as dash
-              showFieldAsBox: true,
-              //runs when a code is typed in
-              onCodeChanged: (String code) {
-                //handle validation or checks here
-              },
-              //runs when every textfield is filled
-              onSubmit: (String verificationCode) {}, // end onSubmit
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: PinCodeTextField(
+                backgroundColor: Colors.white,
+                appContext: context,
+                pastedTextStyle: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+                length: 6,
+                // obscureText: true,
+                // obscuringCharacter: '*',
+                // obscuringWidget: const FlutterLogo(
+                //   size: 24,
+                // ),
+                // blinkWhenObscuring: true,
+                // animationType: AnimationType.fade,
+                // validator: (v) {
+                //   if (v!.length < 3) {
+                //     return "I'm from validator";
+                //   } else {
+                //     return null;
+                //   }
+                // },
+                pinTheme: PinTheme(
+                    shape: PinCodeFieldShape.box,
+                    borderRadius: BorderRadius.circular(5),
+                    fieldHeight: 50,
+                    fieldWidth: 40,
+                    activeFillColor: Colors.white,
+                    inactiveFillColor: Colors.white,
+                    inactiveColor: Colors.grey,
+                    selectedFillColor: Colors.white,
+                    selectedColor: Colors.red),
+                cursorColor: Colors.black,
+                // animationDuration: const Duration(milliseconds: 300),
+                enableActiveFill: true,
+                // errorAnimationController: errorController,
+                controller: _otp,
+                keyboardType: TextInputType.number,
+                boxShadows: const [
+                  BoxShadow(
+                    offset: Offset(0, 1),
+                    color: Colors.black12,
+                    blurRadius: 10,
+                  )
+                ],
+                autoDisposeControllers: false,
+                onCompleted: (v) {
+                  verify();
+                  // Fluttertoast.showToast(
+                  //     msg: "Otp Recived",
+                  //     toastLength: Toast.LENGTH_SHORT,
+                  //     gravity: ToastGravity.BOTTOM,
+                  //     timeInSecForIosWeb: 1,
+                  //     backgroundColor: Colors.red,
+                  //     textColor: Colors.white,
+                  //     fontSize: 13.0);
+                },
+                // onTap: () {
+                //   print("Pressed");
+                // },
+                // onSubmitted: (value) {
+                //   verify();
+
+                // },
+                onChanged: (value) {
+                  // debugPrint(value);
+                  setState(() {});
+                },
+                beforeTextPaste: (text) {
+                  // debugPrint("Allowing to paste $text");
+                  //if you return true then it will show the paste confirmation dialog. Otherwise if false, then nothing will happen.
+                  //but you can show anything you want here, like your pop up saying wrong paste format or etc
+                  return true;
+                },
+              ),
             ),
+            // OtpTextField(
+            //   // fieldWidth: 30,
+            //   numberOfFields: 4,
+            //   enabledBorderColor: const Color.fromARGB(255, 151, 151, 151),
+            //   focusedBorderColor: const Color.fromARGB(255, 225, 64, 64),
+            //   //set to true to show as box or false to show as dash
+            //   showFieldAsBox: true,
+            //   //runs when a code is typed in
+            //   // onCodeChanged: (String code) {
+            //   //handle validation or checks here
+            //   // },
+            //   //runs when every textfield is filled
+            //   onSubmit: (String verificationCode) {
+
+            //   }, // end onSubmit
+            // ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -183,7 +354,7 @@ class _VerifyState extends State<Verify> {
                                 builder: (context) => const Email()),
                           );
                         },
-                        child: const Text(
+                        child: Text(
                           "Previous",
                           style: TextStyle(color: Colors.red),
                         )),
@@ -233,12 +404,6 @@ class Password extends StatefulWidget {
 class _PasswordState extends State<Password> {
   TextEditingController confirmController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-
-  @override
-  void dispose() {
-    confirmController.dispose(); //here
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -332,15 +497,17 @@ class _PasswordState extends State<Password> {
                         elevation: MaterialStateProperty.all(0),
                         backgroundColor:
                             MaterialStateProperty.all(Colors.white)),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const Final()),
-                        );
-                      }
-                    },
+                    onPressed: _password.text != confirmController.text
+                        ? null
+                        : () {
+                            if (_formKey.currentState!.validate()) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const Final()),
+                              );
+                            }
+                          },
                     child: const Text(
                       "Next",
                       style: TextStyle(color: Colors.red),
@@ -774,10 +941,11 @@ class _FinalState extends State<Final> {
                             textColor: Colors.white,
                             fontSize: 13.0);
                       }
-                      // _LastName.clear();
-                      // _firstName.clear();
-                      // _email.clear();
-                      // _password.clear();
+                      _LastName.clear();
+                      _firstName.clear();
+                      _email.clear();
+                      _password.clear();
+                      _otp.clear();
                     },
                     child: const Text(
                       "Done",

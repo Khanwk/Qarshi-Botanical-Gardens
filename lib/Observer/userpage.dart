@@ -8,9 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:qarshi_app/Observer/afterimage.dart';
 import 'package:qarshi_app/services/HomePage.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:qarshi_app/services/dbManager.dart';
 import '../services/RouteManager.dart';
-import '../services/storage.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({Key? key}) : super(key: key);
@@ -65,29 +63,26 @@ class _UserPageState extends State<UserPage> {
             length: 4,
             child: Scaffold(
               body: const HomePage(),
-              floatingActionButton: Visibility(
-                visible: 'Observer' == context.watch<ManageRoute>().User,
-                child: SpeedDial(
-                  animatedIcon: AnimatedIcons.search_ellipsis,
-                  backgroundColor: CupertinoColors.systemRed,
-                  spacing: 10,
-                  spaceBetweenChildren: 8,
-                  openCloseDial: speedDialOpen,
-                  children: [
-                    SpeedDialChild(
-                        onTap: () => pickImage(ImageSource.gallery),
-                        child: const Icon(Icons.image_outlined),
-                        backgroundColor: CupertinoColors.white,
-                        label: 'Gallery'),
-                    SpeedDialChild(
-                        onTap: () {
-                          pickImage(ImageSource.camera);
-                        },
-                        child: const Icon(Icons.camera_alt_outlined),
-                        backgroundColor: CupertinoColors.white,
-                        label: 'Camera')
-                  ],
-                ),
+              floatingActionButton: SpeedDial(
+                animatedIcon: AnimatedIcons.search_ellipsis,
+                backgroundColor: CupertinoColors.systemRed,
+                spacing: 10,
+                spaceBetweenChildren: 8,
+                openCloseDial: speedDialOpen,
+                children: [
+                  SpeedDialChild(
+                      onTap: () => pickImage(ImageSource.gallery),
+                      child: const Icon(Icons.image_outlined),
+                      backgroundColor: CupertinoColors.white,
+                      label: 'Gallery'),
+                  SpeedDialChild(
+                      onTap: () {
+                        pickImage(ImageSource.camera);
+                      },
+                      child: const Icon(Icons.camera_alt_outlined),
+                      backgroundColor: CupertinoColors.white,
+                      label: 'Camera')
+                ],
               ),
             ),
           ),

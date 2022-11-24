@@ -2,10 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:qarshi_app/Observer/Message.dart';
 import 'package:qarshi_app/Observer/chat.dart';
 import 'package:qarshi_app/services/RouteManager.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:qarshi_app/services/dbManager.dart';
 
 class Sepecies extends StatefulWidget {

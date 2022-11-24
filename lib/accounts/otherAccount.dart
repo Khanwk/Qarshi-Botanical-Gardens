@@ -398,6 +398,21 @@ class _OtherAccountState extends State<OtherAccount> {
                                                         child:
                                                             CircularProgressIndicator(),
                                                       );
+                                                    } else if (Projectssnapshot
+                                                            .data!.docs.length <
+                                                        1) {
+                                                      return Padding(
+                                                        padding: EdgeInsets.only(
+                                                            top: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .height *
+                                                                0.2),
+                                                        child: Center(
+                                                          child: Text(
+                                                              "No Observation Yet !"),
+                                                        ),
+                                                      );
                                                     } else {
                                                       return ListView.builder(
                                                           shrinkWrap: true,
@@ -584,6 +599,21 @@ class _OtherAccountState extends State<OtherAccount> {
                                                       return const Center(
                                                         child:
                                                             CircularProgressIndicator(),
+                                                      );
+                                                    } else if (Projectssnapshot
+                                                            .data!.docs.length <
+                                                        1) {
+                                                      return Padding(
+                                                        padding: EdgeInsets.only(
+                                                            top: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .height *
+                                                                0.2),
+                                                        child: Center(
+                                                          child: Text(
+                                                              "No Projects Yet !"),
+                                                        ),
                                                       );
                                                     } else {
                                                       return ListView.builder(

@@ -15,7 +15,7 @@ class _ButtonState extends State<Button> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
+        title: const Center(
           child: Text(
             "Result",
             style: TextStyle(color: Colors.red),
@@ -112,7 +112,7 @@ class _ButtonState extends State<Button> {
               ],
             ),
           ),
-          Divider(
+          const Divider(
             thickness: 2,
           ),
           Center(
