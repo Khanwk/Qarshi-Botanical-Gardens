@@ -857,6 +857,7 @@ class _AccountState extends State<Account> {
                                                 .currentobserverdoc['email']),
                                             trailing: Visibility(
                                               visible: !edit,
+                                              // ignore: sort_child_properties_last
                                               child: IconButton(
                                                 icon: const Icon(
                                                     Icons.create_outlined),

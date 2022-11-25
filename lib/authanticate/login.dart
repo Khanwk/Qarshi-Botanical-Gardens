@@ -253,13 +253,16 @@ class _HomeState extends State<Home> {
 
                                         setState(() {
                                           _loggedin = false;
-
+                                          List temp = data['requesturl'];
+                                          List temp2 =
+                                              data['requestobservation'];
                                           context
                                               .read<dbManager>()
                                               .ChangeCurrentObserverDoc(
                                                   documentSnapshot);
                                           context.read<dbManager>().ChangeP(
                                               _passwordController.text.trim());
+
                                           _emailController.clear();
                                           _passwordController.clear();
 

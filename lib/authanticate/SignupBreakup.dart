@@ -550,7 +550,7 @@ class _FinalState extends State<Final> {
       print(e);
     }
     String downloadUrl = await storage.ref().child(fileName).getDownloadURL();
-    FirebaseFirestore.instance.collection('observers').doc(fileName).set({
+    FirebaseFirestore.instance.collection('observers').doc(fileName).update({
       "image": downloadUrl,
     });
   }
@@ -875,15 +875,19 @@ class _FinalState extends State<Final> {
                             FirebaseFirestore.instance
                                 .collection('observers')
                                 .doc(signedInUser.user!.uid)
-                                .set({
+                                .update({
                               'email': signedInUser.user!.email,
                               'name': _firstName.text.trim() +
                                   _LastName.text.trim(),
                               'address': _Address.text.trim(),
                               'role': 'Observer',
-                              'noObservation': '0',
+                              'noObservation': 0,
                               'ProjectRequest': [],
-                              'uid': signedInUser.user!.uid
+                              'requestobservation': [],
+                              'uid': signedInUser.user!.uid,
+                              'requesturl': [],
+                              'requests': 0,
+                              'responselist': []
                             }).then((signedInUser) {
                               Fluttertoast.showToast(
                                   msg: 'success ',
