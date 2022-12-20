@@ -42,18 +42,48 @@ class _SepeciesState extends State<Sepecies> {
                 ),
                 title: Visibility(
                   visible: "Sepecies" == context.watch<ManageRoute>().Sepecies,
-                  child: const Text(
-                    'Sepecies',
-                    style: TextStyle(color: Colors.white),
-                  ),
                   replacement: const Text(
                     'Observation',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  child: const Text(
+                    'Sepecies',
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
                 centerTitle: true,
                 elevation: 0,
                 backgroundColor: Colors.red,
+                actions: [
+                  Visibility(
+                    visible:
+                        "Sepecies" != context.watch<ManageRoute>().Sepecies,
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red, elevation: 0),
+                        onPressed: (() {
+                          FirebaseFirestore.instance
+                              .collection('observers')
+                              .doc(
+                                  Provider.of<dbManager>(context, listen: false)
+                                      .currentobserverdoc['uid'])
+                              .update({
+                            'responselist':
+                                FieldValue.arrayRemove([obId['uid']])
+                          });
+                          Navigator.pop(context);
+                        }),
+                        child: Row(
+                          children: const [
+                            Text(
+                              "Remove",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            // Icon(Icons.done)
+                          ],
+                        )),
+                  )
+                ],
               ),
               body: Column(children: [
                 SizedBox(
@@ -66,27 +96,36 @@ class _SepeciesState extends State<Sepecies> {
                       ),
                       child: ListTile(
                         leading: Container(
-                          decoration: const BoxDecoration(
-                              shape: BoxShape.circle, color: Colors.white),
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: Image.network(context
+                                          .watch<dbManager>()
+                                          .observerdoc['image'])
+                                      .image),
+                              shape: BoxShape.circle,
+                              color: Colors.white),
                           width: MediaQuery.of(context).size.width * 0.15,
                           height: MediaQuery.of(context).size.height * 0.08,
                         ),
                         title: Text(
                           obId['BotanicalName'].toString(),
-                          style: TextStyle(fontSize: 20, color: Colors.white),
+                          style: const TextStyle(
+                              fontSize: 20, color: Colors.white),
                         ),
                         subtitle: Text(
                           context
                               .watch<dbManager>()
                               .observerdoc['name']
                               .toString(),
-                          style: TextStyle(fontSize: 14, color: Colors.white),
+                          style: const TextStyle(
+                              fontSize: 14, color: Colors.white),
                         ),
                         trailing: Visibility(
-                          visible: context
-                                  .watch<dbManager>()
-                                  .currentobserverdoc['name'] !=
-                              context.watch<dbManager>().observerdoc['name'],
+                          visible:
+                              context.watch<dbManager>().observerdoc['uid'] !=
+                                  context
+                                      .watch<dbManager>()
+                                      .currentobserverdoc['uid'],
                           child: IconButton(
                               onPressed: () {
                                 Get.to(const ChatPage(),
@@ -109,13 +148,23 @@ class _SepeciesState extends State<Sepecies> {
                       borderRadius: BorderRadius.only(
                           bottomLeft: Radius.circular(30),
                           bottomRight: Radius.circular(30))),
-                  child: FittedBox(
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.2,
-                      height: MediaQuery.of(context).size.height * 0.15,
-                      decoration: const BoxDecoration(
-                          color: Colors.white, shape: BoxShape.circle),
-                    ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: FittedBox(
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.4,
+                            height: MediaQuery.of(context).size.height * 0.25,
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: Image.network(obId['image1']).image),
+                                color: Colors.white,
+                                shape: BoxShape.circle),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 TabBar(
@@ -185,79 +234,10 @@ class _SepeciesState extends State<Sepecies> {
                   height: MediaQuery.of(context).size.height * 0.28,
                   width: MediaQuery.of(context).size.width,
                   child: TabBarView(children: [
-                    // SingleChildScrollView(
-                    //   child: Column(
-                    //     children: [
-                    //       SizedBox(
-                    //         height: 30,
-                    //         child: Row(
-                    //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    //           children: [
-                    //             Text('Botanical Name: '),
-                    //             Text(obId['BotanicalName'].toString())
-                    //           ],
-                    //         ),
-                    //       ),
-                    //       Divider(
-                    //         color: Colors.black,
-                    //       ),
-                    //       SizedBox(
-                    //         height: 30,
-                    //         child: Row(
-                    //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    //           children: [
-                    //             Text('Urdu Name: '),
-                    //             Text(obId['LocalName'].toString())
-                    //           ],
-                    //         ),
-                    //       ),
-                    //       Divider(
-                    //         color: Colors.black,
-                    //       ),
-                    //       SizedBox(
-                    //         height: 30,
-                    //         child: Row(
-                    //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    //           children: [
-                    //             Text('English Name:  '),
-                    //             Text(obId['EnglishName'].toString())
-                    //           ],
-                    //         ),
-                    //       ),
-                    //       Divider(
-                    //         color: Colors.black,
-                    //       ),
-                    //       SizedBox(
-                    //         height: 30,
-                    //         child: Row(
-                    //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    //           children: [
-                    //             Text('Family:  '),
-                    //             Text(obId['Family'].toString())
-                    //           ],
-                    //         ),
-                    //       ),
-                    //       Divider(
-                    //         color: Colors.black,
-                    //       ),
-                    //       SizedBox(
-                    //         height: 30,
-                    //         width: MediaQuery.of(context).size.width,
-                    //         child: Row(
-                    //           mainAxisAlignment: MainAxisAlignment.center,
-                    //           children: [
-                    //             Text('Description:  '),
-                    //             Text(obId['Description'].toString())
-                    //           ],
-                    //         ),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
-
                     SingleChildScrollView(
                       child: DataTable(
                           // horizontalMargin: 0,
+                          headingRowHeight: 0,
                           columns: const <DataColumn>[
                             DataColumn(
                               label: Text(
@@ -269,63 +249,66 @@ class _SepeciesState extends State<Sepecies> {
                               label: Text('Chracteristics',
                                   style: TextStyle(fontSize: 19)),
                             ),
-                          ], rows: <DataRow>[
-                        DataRow(
-                          cells: <DataCell>[
-                            const DataCell(Text('Botanical Name')),
-                            DataCell(Text(obId['BotanicalName'].toString())),
-                            // DataCell(Text('Professor')),
                           ],
-                        ),
-                        DataRow(
-                          cells: <DataCell>[
-                            const DataCell(Text('Urdu Name')),
-                            DataCell(Text(obId['LocalName'].toString())),
-                            // DataCell(Text('Professor')),
-                          ],
-                        ),
-                        DataRow(
-                          cells: <DataCell>[
-                            const DataCell(Text('English Name')),
-                            DataCell(Text(obId['EnglishName'].toString())),
-                            // DataCell(Text('Professor')),
-                          ],
-                        ),
-                        DataRow(
-                          cells: <DataCell>[
-                            const DataCell(Text('family')),
-                            DataCell(Text(obId['Family'].toString())),
-                            // DataCell(Text('Professor')),
-                          ],
-                        ),
-                        DataRow(
-                          cells: <DataCell>[
-                            const DataCell(Text('Desciption')),
-                            DataCell(
-                              Tooltip(
-                                showDuration: const Duration(seconds: 5),
-                                waitDuration: const Duration(seconds: 1),
-                                height:
-                                    MediaQuery.of(context).size.height * 0.07,
-                                message: obId['Description'].toString(),
-                                triggerMode: TooltipTriggerMode.tap,
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(25),
-                                    color: Colors.grey),
-                                child: Text(
-                                  (obId['Description'].toString()),
-                                  softWrap: true,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
+                          rows: <DataRow>[
+                            DataRow(
+                              cells: <DataCell>[
+                                const DataCell(Text('Botanical Name')),
+                                DataCell(
+                                    Text(obId['BotanicalName'].toString())),
+                                // DataCell(Text('Professor')),
+                              ],
                             ),
-                            // DataCell(Text('Professor')),
-                          ],
-                        ),
-                      ]),
+                            DataRow(
+                              cells: <DataCell>[
+                                const DataCell(Text('Urdu Name')),
+                                DataCell(Text(obId['LocalName'].toString())),
+                                // DataCell(Text('Professor')),
+                              ],
+                            ),
+                            DataRow(
+                              cells: <DataCell>[
+                                const DataCell(Text('English Name')),
+                                DataCell(Text(obId['EnglishName'].toString())),
+                                // DataCell(Text('Professor')),
+                              ],
+                            ),
+                            DataRow(
+                              cells: <DataCell>[
+                                const DataCell(Text('family')),
+                                DataCell(Text(obId['Family'].toString())),
+                                // DataCell(Text('Professor')),
+                              ],
+                            ),
+                            DataRow(
+                              cells: <DataCell>[
+                                const DataCell(Text('Desciption')),
+                                DataCell(
+                                  Tooltip(
+                                    showDuration: const Duration(seconds: 5),
+                                    waitDuration: const Duration(seconds: 1),
+                                    height: MediaQuery.of(context).size.height *
+                                        0.07,
+                                    message: obId['Description'].toString(),
+                                    triggerMode: TooltipTriggerMode.tap,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(25),
+                                        color: Colors.grey),
+                                    child: Text(
+                                      (obId['Description'].toString()),
+                                      softWrap: true,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                // DataCell(Text('Professor')),
+                              ],
+                            ),
+                          ]),
                     ),
                     SingleChildScrollView(
-                      child: DataTable(columns: const <DataColumn>[
+                      child: DataTable(headingRowHeight: 0, columns: const <
+                          DataColumn>[
                         DataColumn(
                           label: Text(
                             'Genral Info',
@@ -339,70 +322,70 @@ class _SepeciesState extends State<Sepecies> {
                       ], rows: <DataRow>[
                         DataRow(
                           cells: <DataCell>[
-                            DataCell(Text('Life Span:')),
+                            const DataCell(Text('Life Span:')),
                             DataCell(Text(obId['LifeSpan'].toString())),
                             // DataCell(Text('Professor')),
                           ],
                         ),
                         DataRow(
                           cells: <DataCell>[
-                            DataCell(Text('Blooming Period:')),
+                            const DataCell(Text('Blooming Period:')),
                             DataCell(Text(obId['BloomingPeriod'].toString())),
                             // DataCell(Text('Professor')),
                           ],
                         ),
                         DataRow(
                           cells: <DataCell>[
-                            DataCell(Text('Plant Height:')),
+                            const DataCell(Text('Plant Height:')),
                             DataCell(Text(obId['PlantHeight'].toString())),
                             // DataCell(Text('Professor')),
                           ],
                         ),
                         DataRow(
                           cells: <DataCell>[
-                            DataCell(Text('Plant Spread:')),
+                            const DataCell(Text('Plant Spread:')),
                             DataCell(Text(obId['PlantSpread'].toString())),
                             // DataCell(Text('Professor')),
                           ],
                         ),
                         DataRow(
                           cells: <DataCell>[
-                            DataCell(Text('Habitat:')),
+                            const DataCell(Text('Habitat:')),
                             DataCell(Text(obId['Habitat'].toString())),
                             // DataCell(Text('Professor')),
                           ],
                         ),
                         DataRow(
                           cells: <DataCell>[
-                            DataCell(Text('Inflorescence:')),
+                            const DataCell(Text('Inflorescence:')),
                             DataCell(Text(obId['Inflorescense'].toString())),
                             // DataCell(Text('Professor')),
                           ],
                         ),
                         DataRow(
                           cells: <DataCell>[
-                            DataCell(Text('Flower Shape:')),
+                            const DataCell(Text('Flower Shape:')),
                             DataCell(Text(obId['FlowerShape'].toString())),
                             // DataCell(Text('Professor')),
                           ],
                         ),
                         DataRow(
                           cells: <DataCell>[
-                            DataCell(Text('Flower Color :')),
+                            const DataCell(Text('Flower Color :')),
                             DataCell(Text(obId['FruitColor'].toString())),
                             // DataCell(Text('Professor')),
                           ],
                         ),
                         DataRow(
                           cells: <DataCell>[
-                            DataCell(Text('Stem Shape :')),
+                            const DataCell(Text('Stem Shape :')),
                             DataCell(Text(obId['StemShape'].toString())),
                             // DataCell(Text('Professor')),
                           ],
                         ),
                         DataRow(
                           cells: <DataCell>[
-                            DataCell(Text('Root Type :')),
+                            const DataCell(Text('Root Type :')),
                             DataCell(Text(obId['RootType'].toString())),
                             // DataCell(Text('Professor')),
                           ],
@@ -410,55 +393,59 @@ class _SepeciesState extends State<Sepecies> {
                       ]),
                     ),
                     SingleChildScrollView(
-                      child: DataTable(columns: const <DataColumn>[
-                        DataColumn(
-                          label: Text(
-                            '',
-                            style: TextStyle(fontSize: 19),
-                          ),
-                        ),
-                        DataColumn(
-                          label: Text('Chracteristics',
-                              style: TextStyle(fontSize: 19)),
-                        ),
-                      ], rows: <DataRow>[
-                        DataRow(
-                          cells: <DataCell>[
-                            DataCell(Text('Sunlight')),
-                            DataCell(Text(obId['SunLight'].toString())),
-                            // DataCell(Text('Professor')),
+                      child: DataTable(
+                          headingRowHeight: 0,
+                          columns: const <DataColumn>[
+                            DataColumn(
+                              label: Text(
+                                '',
+                                style: TextStyle(fontSize: 19),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text('Chracteristics',
+                                  style: TextStyle(fontSize: 19)),
+                            ),
                           ],
-                        ),
-                        DataRow(
-                          cells: <DataCell>[
-                            DataCell(Text('Temprature')),
-                            DataCell(Text(obId['Temperature'].toString())),
-                            // DataCell(Text('Professor')),
-                          ],
-                        ),
-                        DataRow(
-                          cells: <DataCell>[
-                            DataCell(Text('Soil')),
-                            DataCell(Text(obId['Soil'].toString())),
-                            // DataCell(Text('Professor')),
-                          ],
-                        ),
-                        DataRow(
-                          cells: <DataCell>[
-                            DataCell(Text('Water')),
-                            DataCell(Text(obId['Water'].toString())),
-                            // DataCell(Text('Professor')),
-                          ],
-                        ),
-                        DataRow(
-                          cells: <DataCell>[
-                            DataCell(Text('Propagation')),
-                            DataCell(Text(obId['Propagation'].toString())),
-                            // DataCell(Text('Professor')),
-                          ],
-                        ),
-                      ]),
+                          rows: <DataRow>[
+                            DataRow(
+                              cells: <DataCell>[
+                                const DataCell(Text('Sunlight')),
+                                DataCell(Text(obId['SunLight'].toString())),
+                                // DataCell(Text('Professor')),
+                              ],
+                            ),
+                            DataRow(
+                              cells: <DataCell>[
+                                const DataCell(Text('Temprature')),
+                                DataCell(Text(obId['Temperature'].toString())),
+                                // DataCell(Text('Professor')),
+                              ],
+                            ),
+                            DataRow(
+                              cells: <DataCell>[
+                                const DataCell(Text('Soil')),
+                                DataCell(Text(obId['Soil'].toString())),
+                                // DataCell(Text('Professor')),
+                              ],
+                            ),
+                            DataRow(
+                              cells: <DataCell>[
+                                const DataCell(Text('Water')),
+                                DataCell(Text(obId['Water'].toString())),
+                                // DataCell(Text('Professor')),
+                              ],
+                            ),
+                            DataRow(
+                              cells: <DataCell>[
+                                const DataCell(Text('Propagation')),
+                                DataCell(Text(obId['Propagation'].toString())),
+                                // DataCell(Text('Professor')),
+                              ],
+                            ),
+                          ]),
                     ),
+
                     // Container(
                     //   CupertinoFormRow(
                     //       prefix: Text('Botanical Name'), child: Text('Abc')),

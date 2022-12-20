@@ -1,4 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:flutter/material.dart';
 
 class ManageRoute with ChangeNotifier {
@@ -10,7 +12,7 @@ class ManageRoute with ChangeNotifier {
   List _observer = [];
   List _project = [];
   List _noobservation = [];
-  late DocumentSnapshot _doc;
+  // late DocumentSnapshot _doc;
 
   String get User => _User;
   String get Message => _Message;
@@ -20,17 +22,17 @@ class ManageRoute with ChangeNotifier {
   List get observer => _observer;
   List get noobservation => _noobservation;
   List get project => _project;
-  DocumentSnapshot get doc => _doc;
+  // DocumentSnapshot get doc => _doc;
 
   void ChangeUser(String a) {
     _User = a;
     notifyListeners();
   }
 
-  void ChangeDoc(DocumentSnapshot a) {
-    _doc = a;
-    notifyListeners();
-  }
+  // void ChangeDoc(DocumentSnapshot a) {
+  //   _doc = a;
+  //   notifyListeners();
+  // }
 
   void ChangeSepecies(String a) {
     _Sepecies = a;

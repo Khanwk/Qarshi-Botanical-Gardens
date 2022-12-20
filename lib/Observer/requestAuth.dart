@@ -58,6 +58,15 @@ class _RequestAuthState extends State<RequestAuth> {
                               .collection('observations')
                               .doc(obId['uid'])
                               .update({"status": val});
+                          FirebaseFirestore.instance
+                              .collection('observers')
+                              .doc(
+                                  Provider.of<dbManager>(context, listen: false)
+                                      .currentobserverdoc['uid'])
+                              .update({
+                            'requestobservation':
+                                FieldValue.arrayRemove([obId['uid']])
+                          });
                           Navigator.pop(context);
                         } else {
                           Fluttertoast.showToast(

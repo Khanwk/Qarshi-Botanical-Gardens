@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_final_fields, use_build_context_synchronously, non_constant_identifier_names
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,8 +15,6 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:qarshi_app/Observer/Sepecies.dart';
-import 'package:qarshi_app/Observer/start.dart';
-import 'package:qarshi_app/Observer/userpage.dart';
 import 'package:qarshi_app/services/RouteManager.dart';
 import 'package:qarshi_app/services/dbManager.dart';
 import 'package:http/http.dart' as http;
@@ -52,7 +52,6 @@ class _RequestObState extends State<RequestOb> {
   TextEditingController _Inflorescense = TextEditingController();
   TextEditingController _LeafColor = TextEditingController();
   TextEditingController _StemShape = TextEditingController();
-  TextEditingController _SearchQuery = TextEditingController();
   TextEditingController textEditingController = TextEditingController();
   String? dropdownvalue;
   File? image1;
@@ -70,6 +69,8 @@ class _RequestObState extends State<RequestOb> {
     'auto',
   ];
   String? dropdownvalueImage1 = "auto";
+  String? dropdownvalueImage2 = "auto";
+  String? dropdownvalueImage3 = "auto";
   String Address = "";
   String docid = "";
   String url = "";
@@ -78,14 +79,14 @@ class _RequestObState extends State<RequestOb> {
   // bool _value = false;
   String val = "null";
   getImage() async {
-    print("id :: $freindId");
+    // print("id :: $freindId");
     url = await FirebaseStorage.instance
         .ref()
         .child('TempScan')
         .child(freindId)
         .getDownloadURL();
 
-    print('url :$url');
+    // print('url :$url');
     setState(() {
       spinner = false;
     });
@@ -187,7 +188,7 @@ class _RequestObState extends State<RequestOb> {
     var stream = http.ByteStream(image1!.openRead());
     stream.cast();
 
-    var length = await image1!.length();
+    // var length = await image1!.length();
 
     var uri = Uri.parse(
         "https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=true&lang=en&api-key=2b10CIppBiSiXgbZTDEvMfRAVu");
@@ -232,10 +233,10 @@ class _RequestObState extends State<RequestOb> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getImage();
     getlocation();
+
     // Position position = await _getGeoLocationPosition();
     // GetAddressFromLatLong(position);
   }
@@ -245,7 +246,7 @@ class _RequestObState extends State<RequestOb> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: Text(
+        title: const Text(
           "Request",
           style: TextStyle(color: Colors.red),
         ),
@@ -262,9 +263,6 @@ class _RequestObState extends State<RequestOb> {
                 width: MediaQuery.of(context).size.width * 0.9,
                 child: Visibility(
                   visible: spinner,
-                  child: Center(
-                    child: CircularProgressIndicator(),
-                  ),
                   replacement: Container(
                       decoration: BoxDecoration(
                           // shape: BoxShape.circle,
@@ -274,10 +272,13 @@ class _RequestObState extends State<RequestOb> {
                       fit: BoxFit.fill,
                     ).image,
                   ))),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
               ),
             ),
-            Divider(
+            const Divider(
               thickness: 2,
             ),
             SizedBox(
@@ -288,7 +289,7 @@ class _RequestObState extends State<RequestOb> {
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 0.45,
                     child: RadioListTile(
-                      title: Text(
+                      title: const Text(
                         "Create New",
                         style: TextStyle(color: Colors.red),
                       ),
@@ -304,7 +305,7 @@ class _RequestObState extends State<RequestOb> {
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 0.45,
                     child: RadioListTile(
-                      title: Text("Already Exist",
+                      title: const Text("Already Exist",
                           style: TextStyle(color: Colors.red)),
                       value: "already",
                       groupValue: val,
@@ -333,31 +334,24 @@ class _RequestObState extends State<RequestOb> {
                         child: Align(
                           alignment: Alignment.topLeft,
                           child: ElevatedButton(
-                              child: Text(
-                                "Auto-Fill",
-                                style: TextStyle(color: Colors.red),
-                              ),
                               style: ElevatedButton.styleFrom(
-                                  primary: Colors.white, elevation: 0),
+                                  backgroundColor: Colors.white, elevation: 0),
                               onPressed: (() async {
                                 if (image1 != null) {
                                   uploadImage(
                                     dropdownvalueImage1.toString(),
-                                    // dropdownvalueImage2.toString(),
-                                    // dropdownvalueImage3.toString()
                                   );
                                   if (done) {
                                     _BotanicalName = TextEditingController(
                                         text: await data["results"][0]
                                             ["species"]["scientificName"]);
                                     _EnglishName = TextEditingController(
-                                        text: await data["results"][0]
-                                                ["species"]["commonNames"]
+                                        text: data["results"][0]["species"]
+                                                ["commonNames"]
                                             .toString());
                                     _Family = TextEditingController(
-                                        text: await data["results"][0]
-                                                    ["species"]["family"]
-                                                ['scientificName']
+                                        text: data["results"][0]["species"]
+                                                ["family"]['scientificName']
                                             .toString());
                                   } else {
                                     Fluttertoast.showToast(
@@ -379,16 +373,16 @@ class _RequestObState extends State<RequestOb> {
                                       textColor: Colors.white,
                                       fontSize: 13.0);
                                 }
-                              })),
+                              }),
+                              child: const Text(
+                                "Auto-Fill",
+                                style: TextStyle(color: Colors.red),
+                              )),
                         ),
                       ),
                       Align(
                           alignment: Alignment.topRight,
                           child: ElevatedButton(
-                              child: Text(
-                                "Clear all",
-                                style: TextStyle(color: Colors.red),
-                              ),
                               style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white, elevation: 0),
                               onPressed: (() {
@@ -424,11 +418,15 @@ class _RequestObState extends State<RequestOb> {
                                 _LeafColor.clear();
                                 _StemShape.clear();
                                 textEditingController.clear();
-                              }))),
+                              }),
+                              child: const Text(
+                                "Clear all",
+                                style: TextStyle(color: Colors.red),
+                              ))),
                     ],
                   ),
                   showspinner == true
-                      ? Center(child: CircularProgressIndicator())
+                      ? const Center(child: CircularProgressIndicator())
                       : Column(
                           children: [
                             Row(children: [
@@ -440,28 +438,6 @@ class _RequestObState extends State<RequestOb> {
                                   children: [
                                     Visibility(
                                       visible: image1 == null,
-                                      child: SizedBox(
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                0.1,
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.25,
-                                        child: ElevatedButton(
-                                          child: const Icon(Icons.add_a_photo),
-                                          onPressed: () {
-                                            pickImage(
-                                                ImageSource.camera, image1, 1);
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.red,
-                                              // backgroundColor: Colors.white,
-                                              side: const BorderSide(
-                                                width: 2,
-                                                color: Colors.black,
-                                              )),
-                                        ),
-                                      ),
                                       // ignore: sized_box_for_whitespace
                                       replacement: Container(
                                           height: MediaQuery.of(context)
@@ -475,6 +451,28 @@ class _RequestObState extends State<RequestOb> {
                                           child: image1 == null
                                               ? const Text('No image to show')
                                               : Image.file(image1!)),
+                                      child: SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.1,
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.25,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            pickImage(
+                                                ImageSource.camera, image1, 1);
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                              // backgroundColor: Colors.white,
+                                              side: const BorderSide(
+                                                width: 2,
+                                                color: Colors.black,
+                                              )),
+                                          child: const Icon(Icons.add_a_photo),
+                                        ),
+                                      ),
                                     ),
                                     DropdownButton(
                                       value: dropdownvalueImage1,
@@ -501,40 +499,133 @@ class _RequestObState extends State<RequestOb> {
                                         0.065),
                                 child: Visibility(
                                   visible: image1 != null,
-                                  child: Visibility(
-                                    visible: image2 == null,
-                                    child: SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height *
-                                              0.1,
-                                      width: MediaQuery.of(context).size.width *
-                                          0.25,
-                                      child: ElevatedButton(
-                                        child: const Icon(Icons.add_a_photo),
-                                        onPressed: () {
-                                          pickImage(
-                                              ImageSource.camera, image2, 2);
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            // backgroundColor: Colors.white,
-                                            side: const BorderSide(
-                                              width: 2,
-                                              color: Colors.black,
-                                            )),
-                                      ),
-                                    ),
-                                    // ignore: sized_box_for_whitespace
-                                    replacement: Container(
-                                        height:
-                                            MediaQuery.of(context).size.height *
+                                  child: Column(
+                                    children: [
+                                      Visibility(
+                                        visible: image2 == null,
+                                        // ignore: sized_box_for_whitespace
+                                        replacement: Container(
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
                                                 0.1,
-                                        width:
-                                            MediaQuery.of(context).size.width *
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
                                                 0.25,
-                                        child: image2 == null
-                                            ? const Text('No image to show')
-                                            : Image.file(image2!)),
+                                            child: image2 == null
+                                                ? const Text('No image to show')
+                                                : Image.file(image2!)),
+                                        child: SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.1,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.25,
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              pickImage(ImageSource.camera,
+                                                  image2, 2);
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                                // backgroundColor: Colors.white,
+                                                side: const BorderSide(
+                                                  width: 2,
+                                                  color: Colors.black,
+                                                )),
+                                            child:
+                                                const Icon(Icons.add_a_photo),
+                                          ),
+                                        ),
+                                      ),
+                                      DropdownButton(
+                                        value: dropdownvalueImage2,
+                                        icon: const Icon(
+                                            Icons.keyboard_arrow_down),
+                                        items: itemsImages.map((String items) {
+                                          return DropdownMenuItem(
+                                            value: items,
+                                            child: Text(items),
+                                          );
+                                        }).toList(),
+                                        onChanged: (String? newValue) {
+                                          setState(() {
+                                            dropdownvalueImage2 = newValue!;
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    left: MediaQuery.of(context).size.width *
+                                        0.065),
+                                child: Visibility(
+                                  visible: image2 != null && image1 != null,
+                                  child: Column(
+                                    children: [
+                                      Visibility(
+                                        visible: image3 == null,
+                                        // ignore: sized_box_for_whitespace
+                                        replacement: Container(
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                0.1,
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.25,
+                                            child: image3 == null
+                                                ? const Text('No image to show')
+                                                : Image.file(image3!)),
+                                        child: SizedBox(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.1,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.25,
+                                          child: ElevatedButton(
+                                            onPressed: () => pickImage(
+                                                ImageSource.camera, image3, 3),
+                                            style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                                // backgroundColor: Colors.white,
+                                                side: const BorderSide(
+                                                  width: 2,
+                                                  color: Colors.black,
+                                                )),
+                                            child:
+                                                const Icon(Icons.add_a_photo),
+                                          ),
+                                        ),
+                                      ),
+                                      DropdownButton(
+                                        value: dropdownvalueImage3,
+                                        icon: const Icon(
+                                            Icons.keyboard_arrow_down),
+                                        items: itemsImages.map((String items) {
+                                          return DropdownMenuItem(
+                                            value: items,
+                                            child: Text(items),
+                                          );
+                                        }).toList(),
+                                        onChanged: (String? newValue) {
+                                          setState(() {
+                                            dropdownvalueImage3 = newValue!;
+                                          });
+                                        },
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -689,10 +780,6 @@ class _RequestObState extends State<RequestOb> {
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
                                 ElevatedButton(
-                                  child: Text(
-                                    "Save and Send",
-                                    style: TextStyle(color: Colors.red),
-                                  ),
                                   style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.white,
                                       elevation: 0),
@@ -717,7 +804,7 @@ class _RequestObState extends State<RequestOb> {
                                           .ref()
                                           .child("observations")
                                           .child(docid)
-                                          .child(docid + "1");
+                                          .child("${docid}1");
                                       await ref.putFile(image1!);
 
                                       url1 = await ref.getDownloadURL();
@@ -727,7 +814,7 @@ class _RequestObState extends State<RequestOb> {
                                             .ref()
                                             .child("observations")
                                             .child(docid)
-                                            .child(docid + "2");
+                                            .child("${docid}2");
                                         await ref.putFile(image1!);
 
                                         url2 = await ref.getDownloadURL();
@@ -737,7 +824,7 @@ class _RequestObState extends State<RequestOb> {
                                               .ref()
                                               .child("observations")
                                               .child(docid)
-                                              .child(docid + "3");
+                                              .child("${docid}3");
                                           await ref.putFile(image1!);
 
                                           url3 = await ref.getDownloadURL();
@@ -787,7 +874,7 @@ class _RequestObState extends State<RequestOb> {
                                       'Propagation': _Propagation.text,
                                       'Date': DateTime.now()
                                     });
-                                    var collectiondata = await FirebaseFirestore
+                                    var collectiondata = FirebaseFirestore
                                         .instance
                                         .collection('observers')
                                         .where('role', isEqualTo: 'Researcher');
@@ -828,6 +915,11 @@ class _RequestObState extends State<RequestOb> {
                                           FieldValue.arrayUnion([docid]),
                                       'requests': "0"
                                     });
+                                    FirebaseStorage.instance
+                                        .ref()
+                                        .child("TempScan")
+                                        .child(freindId)
+                                        .delete();
 
                                     setState(() {
                                       image1 = null;
@@ -865,12 +957,12 @@ class _RequestObState extends State<RequestOb> {
                                     });
                                     Navigator.pop(context);
                                   },
-                                ),
-                                ElevatedButton(
-                                  child: Text(
-                                    "Clear all",
+                                  child: const Text(
+                                    "Save and Send",
                                     style: TextStyle(color: Colors.red),
                                   ),
+                                ),
+                                ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.white,
                                       elevation: 0),
@@ -901,6 +993,10 @@ class _RequestObState extends State<RequestOb> {
                                     _LeafColor.clear();
                                     _StemShape.clear();
                                   },
+                                  child: const Text(
+                                    "Clear all",
+                                    style: TextStyle(color: Colors.red),
+                                  ),
                                 ),
                               ],
                             )
@@ -1028,10 +1124,6 @@ class _RequestObState extends State<RequestOb> {
                                                               )),
                                                         ),
                                                       ),
-                                                      // child: Image(
-                                                      //   image: AssetImage('images/plant.jpg'),
-                                                      //   fit: BoxFit.cover,
-                                                      // ),
                                                     ), // Ink.image
                                                     Row(
                                                       mainAxisAlignment:
@@ -1042,79 +1134,92 @@ class _RequestObState extends State<RequestOb> {
                                                           padding:
                                                               const EdgeInsets
                                                                   .all(8.0),
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                            .only(
-                                                                        left:
-                                                                            10),
-                                                                child: Align(
+                                                          child: Container(
+                                                            width: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width *
+                                                                0.7,
+                                                            child: Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Padding(
+                                                                  padding: const EdgeInsets
+                                                                          .only(
+                                                                      left: 10),
+                                                                  child: Align(
+                                                                    alignment:
+                                                                        Alignment
+                                                                            .centerLeft,
+                                                                    child: Text(
+                                                                      context
+                                                                          .watch<
+                                                                              dbManager>()
+                                                                          .observationdoc['BotanicalName'],
+                                                                      style:
+                                                                          const TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                        color: Color(
+                                                                            0xff050505),
+                                                                        fontSize:
+                                                                            18,
+                                                                      ), // TextStyle
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                Align(
                                                                   alignment:
                                                                       Alignment
                                                                           .centerLeft,
-                                                                  child: Text(
-                                                                    context
-                                                                        .watch<
-                                                                            dbManager>()
-                                                                        .observationdoc['BotanicalName'],
-                                                                    style:
-                                                                        const TextStyle(
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
-                                                                      color: Color(
-                                                                          0xff050505),
-                                                                      fontSize:
-                                                                          18,
-                                                                    ), // TextStyle
+                                                                  child:
+                                                                      Padding(
+                                                                    padding: const EdgeInsets
+                                                                            .only(
+                                                                        top: 5,
+                                                                        left:
+                                                                            10),
+                                                                    child: Text(
+                                                                      obName,
+                                                                      style: const TextStyle(
+                                                                          fontSize:
+                                                                              16),
+                                                                    ),
                                                                   ),
                                                                 ),
-                                                              ),
-                                                              Align(
-                                                                alignment: Alignment
-                                                                    .centerLeft,
-                                                                child: Padding(
-                                                                  padding: const EdgeInsets
-                                                                          .only(
-                                                                      top: 5,
-                                                                      left: 10),
-                                                                  child: Text(
-                                                                    obName,
-                                                                    style: const TextStyle(
-                                                                        fontSize:
-                                                                            16),
+                                                                Align(
+                                                                  alignment:
+                                                                      Alignment
+                                                                          .centerLeft,
+                                                                  child:
+                                                                      Padding(
+                                                                    padding: const EdgeInsets
+                                                                            .only(
+                                                                        top: 5,
+                                                                        left:
+                                                                            10),
+                                                                    child: Text(
+                                                                      Subprojectdata[
+                                                                          'location'],
+                                                                      // overflow:
+                                                                      //     TextOverflow
+                                                                      //         .clip,
+                                                                      style: const TextStyle(
+                                                                          fontSize:
+                                                                              16),
+                                                                    ),
                                                                   ),
                                                                 ),
-                                                              ),
-                                                              Align(
-                                                                alignment: Alignment
-                                                                    .centerLeft,
-                                                                child: Padding(
-                                                                  padding: const EdgeInsets
-                                                                          .only(
-                                                                      top: 5,
-                                                                      left: 10),
-                                                                  child: Text(
-                                                                    Subprojectdata[
-                                                                        'location'],
-                                                                    style: const TextStyle(
-                                                                        fontSize:
-                                                                            16),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ],
+                                                              ],
+                                                            ),
                                                           ),
                                                         ),
                                                         IconButton(
                                                             onPressed:
                                                                 (() async {
-                                                              var collectiondata = await FirebaseFirestore
+                                                              var collectiondata = FirebaseFirestore
                                                                   .instance
                                                                   .collection(
                                                                       'observers')
@@ -1175,42 +1280,26 @@ class _RequestObState extends State<RequestOb> {
                                                                 ]),
                                                                 'requests': "0"
                                                               });
+                                                              FirebaseStorage
+                                                                  .instance
+                                                                  .ref()
+                                                                  .child(
+                                                                      "TempScan")
+                                                                  .child(
+                                                                      freindId)
+                                                                  .delete();
                                                               Navigator.pop(
                                                                   context);
                                                             }),
-                                                            icon: Icon(
+                                                            icon: const Icon(
                                                               Icons.send,
                                                               color: Colors.red,
                                                             ))
                                                       ],
                                                     ),
-
-                                                    // Padding(
-                                                    //   padding: const EdgeInsets.only(right: 281, top: 5),
-                                                    //   child: Text(
-                                                    //     '  Date ',
-                                                    //     style: TextStyle(fontSize: 16),
-                                                    //   ),
-                                                    // ),
-                                                    //
-                                                    // Text
                                                   ])),
                                             );
                                           });
-                                      // Card(
-                                      //   child: ListTile(
-                                      //     onTap: (() {
-                                      //       Get.to(const Sepecies());
-                                      //       context
-                                      //           .read<ManageRoute>()
-                                      //           .ChangeSepecies('observation');
-                                      //     }),
-                                      //     // leading: Text(book[index].rank.toString()),
-                                      //     title: Text(Projectid),
-                                      //     // trailing: Text(book[index].nObservations.toString()),
-                                      //   ),
-                                      // );
-
                                     }
                                   });
                             },

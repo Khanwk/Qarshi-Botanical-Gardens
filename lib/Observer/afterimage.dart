@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_null_comparison, avoid_print, use_build_context_synchronously, non_constant_identifier_names
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -6,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:qarshi_app/Observer/ResultDetail.dart';
-import 'package:firebase_core/firebase_core.dart ' as firebase_core;
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:qarshi_app/services/RouteManager.dart';
@@ -27,6 +28,7 @@ class _ResultsState extends State<Results> {
   // String url1 = "";
   var data = {};
   bool showSpinner = false;
+  // ignore: prefer_typing_uninitialized_variables
   late var result;
 
   uploadTempFile(
@@ -37,8 +39,8 @@ class _ResultsState extends State<Results> {
         Provider.of<dbManager>(context, listen: false)
             .currentobserverdoc['uid']);
     await ref.putFile(image);
-    String url = await ref.getDownloadURL();
-    var collectiondata = await FirebaseFirestore.instance
+    // String url = await ref.getDownloadURL();
+    var collectiondata = FirebaseFirestore.instance
         .collection('observers')
         .where('role', isEqualTo: 'Researcher');
     var querySnapshots = await collectiondata.get();
@@ -95,15 +97,6 @@ class _ResultsState extends State<Results> {
   // }
 
   Future<void> uploadImage(String type) async {
-    setState(() {
-      // showSpinner = true;
-    });
-
-    var stream = http.ByteStream(image.openRead());
-    stream.cast();
-
-    var length = await image.length();
-
     var uri = Uri.parse(
         "https://my-api.plantnet.org/v2/identify/all?include-related-images=true&no-reject=true&lang=en&api-key=2b10CIppBiSiXgbZTDEvMfRAVu");
 
@@ -111,23 +104,48 @@ class _ResultsState extends State<Results> {
 
     request.fields['organs'] = type;
 
-    // var multiport =;
-
     request.files.add(await http.MultipartFile.fromPath("images", image.path));
 
     var response1 = await request.send();
     var response = await http.Response.fromStream(response1);
 
-    // print(response1.stream.toString());
     if (response1.statusCode == 200) {
       data = jsonDecode(response.body);
       setState(() {
         showSpinner = false;
+        api = true;
       });
     } else {
       setState(() {
         showSpinner = false;
       });
+    }
+  }
+
+  String requests = "";
+  RequestList() async {
+    var collection = FirebaseFirestore.instance.collection('observers');
+    var querySnapshot = await collection.get();
+    for (var queryDocumentSnapshot in querySnapshot.docs) {
+      // Fluttertoast.showToast(
+      //     msg:
+      //         '${Provider.of<dbManager>(context, listen: false).currentobserverdoc['uid']}',
+      //     toastLength: Toast.LENGTH_SHORT,
+      //     gravity: ToastGravity.BOTTOM,
+      //     timeInSecForIosWeb: 1,
+      //     backgroundColor: Colors.red,
+      //     textColor: Colors.white,
+      //     fontSize: 13.0);
+      Map<String, dynamic> data = queryDocumentSnapshot.data();
+      if (data['uid'] ==
+          Provider.of<dbManager>(context, listen: false)
+              .currentobserverdoc['uid']) {
+        setState(() {
+          requests = data['requests'];
+        });
+      }
+
+      // var phone = data['phone'];
     }
   }
 
@@ -143,11 +161,12 @@ class _ResultsState extends State<Results> {
 // no need of the file extension, the name will do fine.
 
     // url = await ref.getDownloadURL();
-
     super.initState();
+    RequestList();
   }
 
   String dropdownvalue = 'leaf';
+  bool api = false;
 
 // List of items in our dropdown menu
   var items = [
@@ -171,12 +190,16 @@ class _ResultsState extends State<Results> {
           ),
           actions: [
             Visibility(
-              visible: context.watch<ManageRoute>().User == "Observer",
+              visible: context.watch<dbManager>().currentobserverdoc['role'] ==
+                      "Observer" &&
+                  api &&
+                  requests == "0",
               child: ElevatedButton(
                 onPressed: () {
                   setState(() {
                     showSpinner = true;
                   });
+
                   uploadTempFile(
                           image.path,
                           (Provider.of<dbManager>(context, listen: false)
@@ -190,19 +213,23 @@ class _ResultsState extends State<Results> {
                       .doc(Provider.of<dbManager>(context, listen: false)
                           .currentobserverdoc['uid'])
                       .update({"requests": '1'});
+                  RequestList();
+                  setState(() {
+                    api = false;
+                  });
                 },
-                child: Text(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white, elevation: 0),
+                child: const Text(
                   "Not Satisfied ?",
                   style: TextStyle(color: Colors.red),
                 ),
-                style: ElevatedButton.styleFrom(
-                    primary: Colors.white, elevation: 0),
               ),
             )
           ],
         ),
         body: showSpinner
-            ? Center(
+            ? const Center(
                 child: CircularProgressIndicator(),
               )
             : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: <
@@ -235,7 +262,7 @@ class _ResultsState extends State<Results> {
                               left: MediaQuery.of(context).size.width * 0.05),
                           child: Column(
                             children: [
-                              Text(
+                              const Text(
                                 "Please Select from the following:",
                                 style: TextStyle(color: Colors.red),
                               ),
@@ -277,15 +304,15 @@ class _ResultsState extends State<Results> {
                     height: MediaQuery.of(context).size.height * 0.65,
                     child: Visibility(
                       visible: showSpinner,
-                      child: const Center(
-                        child: CircularProgressIndicator(),
-                      ),
                       replacement: ListView.builder(
                           itemCount: data.length,
                           itemBuilder: (context, index) {
                             return GestureDetector(
                               onTap: () {
-                                Get.to(Button(), arguments: [data, index]);
+                                Get.to(const Button(),
+                                    arguments: [data, index]);
+                                // print(
+                                //     "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL${data["results"][index]["images"][0]["url"]["o"].toString()}");
                               },
                               child: Card(
                                   clipBehavior: Clip.antiAlias,
@@ -348,6 +375,9 @@ class _ResultsState extends State<Results> {
                           } // Stack
 
                           ),
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
                     )),
               ]));
   }

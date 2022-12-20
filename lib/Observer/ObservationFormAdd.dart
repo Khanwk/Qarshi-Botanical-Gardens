@@ -1,4 +1,4 @@
-// ignore_for_file: file_names
+// ignore_for_file: file_names, avoid_print, non_constant_identifier_names
 
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
@@ -216,6 +216,12 @@ class _CameraPageState extends State<CameraPage> {
                               onPressed: () {
                                 _showActionSheet(context);
                               },
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      side: const BorderSide(
+                                          width: 3, color: Colors.grey))),
                               child: Column(
                                 children: [
                                   Padding(
@@ -240,12 +246,6 @@ class _CameraPageState extends State<CameraPage> {
                                   )
                                 ],
                               ),
-                              style: ElevatedButton.styleFrom(
-                                  primary: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      side: const BorderSide(
-                                          width: 3, color: Colors.grey))),
                             )),
                       ),
                     ],
@@ -382,12 +382,12 @@ class _CameraPageState extends State<CameraPage> {
                               image = null;
                             });
                           },
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.lightGreen.shade200),
                           child: const Icon(
                             Icons.done,
                             size: 45,
-                          ),
-                          style: ElevatedButton.styleFrom(
-                              primary: Colors.lightGreen.shade200)),
+                          )),
                     ),
                     SizedBox(
                         width: MediaQuery.of(context).size.width * 0.5,
@@ -398,12 +398,12 @@ class _CameraPageState extends State<CameraPage> {
                                 image = null;
                               });
                             },
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red.shade200),
                             child: const Icon(
                               Icons.cancel,
                               size: 45,
-                            ),
-                            style: ElevatedButton.styleFrom(
-                                primary: Colors.red.shade200))),
+                            ))),
                   ],
                 ),
               ),

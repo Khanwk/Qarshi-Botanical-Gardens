@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qarshi_app/authanticate/onBoarding.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'authanticate/login.dart';
 
 class Splash extends StatefulWidget {
@@ -11,10 +13,23 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
+  bool onboard = true;
+
+  onceon() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    setState(() {
+      onboard = sharedPreferences.getBool('onboard')!;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(milliseconds: 3000), () => Get.off(const Home()));
+    onceon();
+    Timer(
+        const Duration(milliseconds: 3000),
+        () =>
+            onboard ? Get.off(const OnboardingPage1()) : Get.off(const Home()));
   }
 
   @override

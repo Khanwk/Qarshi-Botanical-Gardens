@@ -1,3 +1,5 @@
+// ignore_for_file: sized_box_for_whitespace, non_constant_identifier_names, unnecessary_string_escapes, use_build_context_synchronously, avoid_print
+
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,11 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:qarshi_app/authanticate/login.dart';
-import 'package:qarshi_app/services/storage.dart';
-
 import '../Observer/CreateProject.dart';
 import '../Observer/Sepecies.dart';
 import '../Observer/chat.dart';
@@ -26,23 +25,6 @@ class OtherAccount extends StatefulWidget {
 }
 
 class _OtherAccountState extends State<OtherAccount> {
-  Future<void> _deleteCacheDir() async {
-    final cacheDir = await getTemporaryDirectory();
-
-    if (cacheDir.existsSync()) {
-      cacheDir.deleteSync(recursive: true);
-    }
-  }
-
-  /// this will delete app's storage
-  Future<void> _deleteAppDir() async {
-    final appDir = await getApplicationSupportDirectory();
-
-    if (appDir.existsSync()) {
-      appDir.deleteSync(recursive: true);
-    }
-  }
-
   void logout() async {
     await FirebaseAuth.instance.signOut();
     Get.off(const Home());
@@ -64,13 +46,11 @@ class _OtherAccountState extends State<OtherAccount> {
 
   getImage() async {
     String id =
-        (Provider.of<dbManager>(context, listen: false).observerdoc['uid'] +
-                ".jpg")
+        (Provider.of<dbManager>(context, listen: false).observerdoc['uid'])
             .toString();
     print("id :: $id");
     url = await firebase_storage.FirebaseStorage.instance
-        .ref()
-        .child('observers/$id ')
+        .ref('observers/$id ')
         .getDownloadURL();
 
     print('url :$url');
@@ -97,7 +77,7 @@ class _OtherAccountState extends State<OtherAccount> {
         firebase_storage.FirebaseStorage.instance;
 
     try {
-      await storage.ref('observers/$fileName ').putFile(file);
+      await storage.ref('observers/$fileName').putFile(file);
     } on FirebaseException catch (e) {
       print(e);
     }
@@ -274,52 +254,6 @@ class _OtherAccountState extends State<OtherAccount> {
                                   ),
                                 ),
                               ),
-                              Align(
-                                alignment: const AlignmentDirectional(0.25, 1),
-                                child: CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor:
-                                      const Color.fromARGB(255, 209, 209, 209),
-                                  child: IconButton(
-                                    icon: const Icon(
-                                      Icons.camera_alt,
-                                      color: Color(0xFFF83232),
-                                      size: 22,
-                                    ),
-                                    onPressed: () {
-                                      showModalBottomSheet(
-                                          context: context,
-                                          builder: (context) {
-                                            return Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: <Widget>[
-                                                ListTile(
-                                                  leading:
-                                                      const Icon(Icons.photo),
-                                                  title: const Text('Photo'),
-                                                  onTap: () {
-                                                    pickImage(
-                                                        ImageSource.gallery);
-                                                    Navigator.pop(context);
-                                                  },
-                                                ),
-                                                ListTile(
-                                                  leading:
-                                                      const Icon(Icons.camera),
-                                                  title: const Text('Camera'),
-                                                  onTap: () {
-                                                    pickImage(
-                                                        ImageSource.camera);
-                                                    Navigator.pop(context);
-                                                  },
-                                                ),
-                                              ],
-                                            );
-                                          });
-                                    },
-                                  ),
-                                ),
-                              ),
                             ],
                           ),
                         ],
@@ -366,11 +300,7 @@ class _OtherAccountState extends State<OtherAccount> {
                                       builder: (BuildContext context,
                                           AsyncSnapshot<QuerySnapshot>
                                               snapshot) {
-                                        if (!snapshot.hasData) {
-                                          return const Center(
-                                            child: CircularProgressIndicator(),
-                                          );
-                                        } else {
+                                        if (snapshot.hasData) {
                                           return ListView.builder(
                                             itemCount:
                                                 snapshot.data!.docs.length,
@@ -392,170 +322,239 @@ class _OtherAccountState extends State<OtherAccount> {
                                                       AsyncSnapshot<
                                                               QuerySnapshot>
                                                           Projectssnapshot) {
-                                                    if (!Projectssnapshot
+                                                    if (Projectssnapshot
                                                         .hasData) {
+                                                      if (Projectssnapshot
+                                                          .data!.docs.isEmpty) {
+                                                        return Padding(
+                                                          padding: EdgeInsets.only(
+                                                              top: MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .height *
+                                                                  0.2),
+                                                          child: const Center(
+                                                            child: Text(
+                                                                "No Observation Yet !"),
+                                                          ),
+                                                        );
+                                                      } else {
+                                                        return ListView.builder(
+                                                            shrinkWrap: true,
+                                                            itemCount:
+                                                                Projectssnapshot
+                                                                    .data!
+                                                                    .docs
+                                                                    .length,
+                                                            itemBuilder:
+                                                                (context,
+                                                                    index) {
+                                                              DocumentSnapshot
+                                                                  Subprojectdata =
+                                                                  Projectssnapshot
+                                                                          .data!
+                                                                          .docs[
+                                                                      index];
+                                                              String Projectid =
+                                                                  Projectssnapshot
+                                                                      .data!
+                                                                      .docs[
+                                                                          index]
+                                                                      .id;
+                                                              context
+                                                                  .read<
+                                                                      dbManager>()
+                                                                  .ChangeObservationDoc(
+                                                                      Subprojectdata);
+                                                              String obName =
+                                                                  projectdata[
+                                                                      'name'];
+                                                              return GestureDetector(
+                                                                onTap: () {
+                                                                  FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          'observers')
+                                                                      .doc(id)
+                                                                      .collection(
+                                                                          'observations')
+                                                                      .doc(
+                                                                          Projectid)
+                                                                      .get()
+                                                                      .then((DocumentSnapshot
+                                                                          documentSnapshot) {
+                                                                    Get.to(
+                                                                        const Sepecies(),
+                                                                        arguments:
+                                                                            documentSnapshot);
+                                                                  });
+                                                                },
+                                                                child: Card(
+                                                                    clipBehavior:
+                                                                        Clip
+                                                                            .antiAlias,
+                                                                    shape:
+                                                                        RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              24),
+                                                                    ), // RoundedRectangleBorder
+                                                                    child: Column(
+                                                                        children: [
+                                                                          Container(
+                                                                            decoration: BoxDecoration(
+                                                                                image: DecorationImage(
+                                                                                    image: Image.network(
+                                                                                      Subprojectdata['image1'],
+                                                                                      frameBuilder: (_, image, loadingBuilder, __) {
+                                                                                        if (loadingBuilder == null) {
+                                                                                          return const SizedBox(
+                                                                                            height: 300,
+                                                                                            child: Center(child: CircularProgressIndicator()),
+                                                                                          );
+                                                                                        }
+                                                                                        return image;
+                                                                                      },
+                                                                                      loadingBuilder: (BuildContext context, Widget image, ImageChunkEvent? loadingProgress) {
+                                                                                        if (loadingProgress == null) return image;
+                                                                                        return SizedBox(
+                                                                                          height: 300,
+                                                                                          child: Center(
+                                                                                            child: CircularProgressIndicator(
+                                                                                              value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes! : null,
+                                                                                            ),
+                                                                                          ),
+                                                                                        );
+                                                                                      },
+                                                                                      errorBuilder: (_, __, ___) => Image.asset(
+                                                                                        'assets\Image\splash.png',
+                                                                                        height: 300,
+                                                                                        fit: BoxFit.fitHeight,
+                                                                                      ),
+                                                                                    ).image,
+                                                                                    fit: BoxFit.cover)),
+                                                                            height:
+                                                                                100,
+                                                                            width:
+                                                                                400,
+                                                                            child:
+                                                                                Visibility(
+                                                                              visible: Subprojectdata['status'] == "approved",
+                                                                              replacement: Visibility(
+                                                                                visible: Subprojectdata['status'] == "declined",
+                                                                                replacement: Visibility(
+                                                                                  visible: Subprojectdata['status'] == "pending",
+                                                                                  child: Align(
+                                                                                    alignment: Alignment.topRight,
+                                                                                    child: Padding(
+                                                                                      padding: const EdgeInsets.only(right: 7, top: 7),
+                                                                                      child: Container(
+                                                                                          width: 20.0,
+                                                                                          height: 20.0,
+                                                                                          // padding: const EdgeInsets.all(8.0),
+                                                                                          decoration: BoxDecoration(
+                                                                                            shape: BoxShape.circle,
+                                                                                            color: const Color.fromARGB(255, 203, 185, 21),
+                                                                                            border: Border.all(color: Colors.black),
+                                                                                          )),
+                                                                                    ),
+                                                                                  ),
+                                                                                ),
+                                                                                child: Align(
+                                                                                  alignment: Alignment.topRight,
+                                                                                  child: Padding(
+                                                                                    padding: const EdgeInsets.only(right: 7, top: 7),
+                                                                                    child: Container(
+                                                                                        width: 20.0,
+                                                                                        height: 20.0,
+                                                                                        // padding: const EdgeInsets.all(8.0),
+                                                                                        decoration: BoxDecoration(
+                                                                                          shape: BoxShape.circle,
+                                                                                          color: Colors.red,
+                                                                                          border: Border.all(color: Colors.black),
+                                                                                        )),
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                              child: Align(
+                                                                                alignment: Alignment.topRight,
+                                                                                child: Padding(
+                                                                                  padding: const EdgeInsets.only(right: 7, top: 7),
+                                                                                  child: Container(
+                                                                                      width: 20.0,
+                                                                                      height: 20.0,
+                                                                                      // padding: const EdgeInsets.all(8.0),
+                                                                                      decoration: BoxDecoration(
+                                                                                        shape: BoxShape.circle,
+                                                                                        color: Colors.green,
+                                                                                        border: Border.all(color: Colors.black),
+                                                                                      )),
+                                                                                ),
+                                                                              ),
+                                                                            ),
+
+                                                                            // child: Image(
+                                                                            //   image: AssetImage('images/plant.jpg'),
+                                                                            //   fit: BoxFit.cover,
+                                                                            // ),
+                                                                          ), // Ink.image
+                                                                          Padding(
+                                                                            padding:
+                                                                                const EdgeInsets.only(left: 10),
+                                                                            child:
+                                                                                Align(
+                                                                              alignment: Alignment.centerLeft,
+                                                                              child: Text(
+                                                                                context.watch<dbManager>().observationdoc['BotanicalName'],
+                                                                                style: const TextStyle(
+                                                                                  fontWeight: FontWeight.bold,
+                                                                                  color: Color(0xff050505),
+                                                                                  fontSize: 18,
+                                                                                ), // TextStyle
+                                                                              ),
+                                                                            ),
+                                                                          ),
+
+                                                                          Align(
+                                                                            alignment:
+                                                                                Alignment.centerLeft,
+                                                                            child:
+                                                                                Padding(
+                                                                              padding: const EdgeInsets.only(top: 5, left: 10),
+                                                                              child: Text(
+                                                                                obName,
+                                                                                style: const TextStyle(fontSize: 16),
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                          Align(
+                                                                            alignment:
+                                                                                Alignment.centerLeft,
+                                                                            child:
+                                                                                Padding(
+                                                                              padding: const EdgeInsets.only(top: 5, left: 10),
+                                                                              child: Text(
+                                                                                Subprojectdata['location'],
+                                                                                style: const TextStyle(fontSize: 16),
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        ])),
+                                                              );
+                                                            });
+                                                      }
+                                                    } else {
                                                       return const Center(
                                                         child:
                                                             CircularProgressIndicator(),
                                                       );
-                                                    } else if (Projectssnapshot
-                                                            .data!.docs.length <
-                                                        1) {
-                                                      return Padding(
-                                                        padding: EdgeInsets.only(
-                                                            top: MediaQuery.of(
-                                                                        context)
-                                                                    .size
-                                                                    .height *
-                                                                0.2),
-                                                        child: Center(
-                                                          child: Text(
-                                                              "No Observation Yet !"),
-                                                        ),
-                                                      );
-                                                    } else {
-                                                      return ListView.builder(
-                                                          shrinkWrap: true,
-                                                          itemCount:
-                                                              Projectssnapshot
-                                                                  .data!
-                                                                  .docs
-                                                                  .length,
-                                                          itemBuilder:
-                                                              (context, index) {
-                                                            DocumentSnapshot
-                                                                Subprojectdata =
-                                                                Projectssnapshot
-                                                                        .data!
-                                                                        .docs[
-                                                                    index];
-                                                            String Projectid =
-                                                                Projectssnapshot
-                                                                    .data!
-                                                                    .docs[index]
-                                                                    .id;
-                                                            context
-                                                                .read<
-                                                                    dbManager>()
-                                                                .ChangeObservationDoc(
-                                                                    Subprojectdata);
-                                                            String obName =
-                                                                projectdata[
-                                                                    'name'];
-                                                            return GestureDetector(
-                                                              onTap: () {
-                                                                FirebaseFirestore
-                                                                    .instance
-                                                                    .collection(
-                                                                        'observers')
-                                                                    .doc(id)
-                                                                    .collection(
-                                                                        'observations')
-                                                                    .doc(
-                                                                        Projectid)
-                                                                    .get()
-                                                                    .then((DocumentSnapshot
-                                                                        documentSnapshot) {
-                                                                  Get.to(
-                                                                      const Sepecies(),
-                                                                      arguments:
-                                                                          documentSnapshot);
-                                                                });
-                                                              },
-                                                              child: Card(
-                                                                  clipBehavior: Clip
-                                                                      .antiAlias,
-                                                                  shape:
-                                                                      RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            24),
-                                                                  ), // RoundedRectangleBorder
-                                                                  child: Column(
-                                                                      children: [
-                                                                        Container(
-                                                                          decoration: const BoxDecoration(
-                                                                              image: DecorationImage(
-                                                                                  image: ExactAssetImage(
-                                                                                    'assets/Image/splash.png',
-                                                                                  ),
-                                                                                  fit: BoxFit.cover)),
-                                                                          height:
-                                                                              100,
-                                                                          width:
-                                                                              400,
-                                                                          child:
-                                                                              Align(
-                                                                            alignment:
-                                                                                Alignment.topRight,
-                                                                            child:
-                                                                                Padding(
-                                                                              padding: const EdgeInsets.only(right: 7, top: 7),
-                                                                              child: Container(
-                                                                                  width: 20.0,
-                                                                                  height: 20.0,
-                                                                                  // padding: const EdgeInsets.all(8.0),
-                                                                                  decoration: BoxDecoration(
-                                                                                    shape: BoxShape.circle,
-                                                                                    color: Colors.green,
-                                                                                    border: Border.all(color: Colors.black),
-                                                                                  )),
-                                                                            ),
-                                                                          ),
-                                                                        ), // Ink.image
-                                                                        Padding(
-                                                                          padding:
-                                                                              const EdgeInsets.only(left: 10),
-                                                                          child:
-                                                                              Align(
-                                                                            alignment:
-                                                                                Alignment.centerLeft,
-                                                                            child:
-                                                                                Text(
-                                                                              context.watch<dbManager>().observationdoc['BotanicalName'],
-                                                                              style: const TextStyle(
-                                                                                fontWeight: FontWeight.bold,
-                                                                                color: Color(0xff050505),
-                                                                                fontSize: 18,
-                                                                              ), // TextStyle
-                                                                            ),
-                                                                          ),
-                                                                        ),
-
-                                                                        Align(
-                                                                          alignment:
-                                                                              Alignment.centerLeft,
-                                                                          child:
-                                                                              Padding(
-                                                                            padding:
-                                                                                const EdgeInsets.only(top: 5, left: 10),
-                                                                            child:
-                                                                                Text(
-                                                                              obName,
-                                                                              style: const TextStyle(fontSize: 16),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                        Align(
-                                                                          alignment:
-                                                                              Alignment.centerLeft,
-                                                                          child:
-                                                                              Padding(
-                                                                            padding:
-                                                                                const EdgeInsets.only(top: 5, left: 10),
-                                                                            child:
-                                                                                Text(
-                                                                              Subprojectdata['location'],
-                                                                              style: const TextStyle(fontSize: 16),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ])),
-                                                            );
-                                                          });
                                                     }
                                                   });
                                             },
+                                          );
+                                        } else {
+                                          return const Center(
+                                            child: CircularProgressIndicator(),
                                           );
                                         }
                                       }),
@@ -580,6 +579,8 @@ class _OtherAccountState extends State<OtherAccount> {
                                             itemCount:
                                                 snapshot.data!.docs.length,
                                             itemBuilder: (context, index) {
+                                              DocumentSnapshot projectdata =
+                                                  snapshot.data!.docs[index];
                                               String id =
                                                   snapshot.data!.docs[index].id;
                                               return StreamBuilder(
@@ -601,8 +602,7 @@ class _OtherAccountState extends State<OtherAccount> {
                                                             CircularProgressIndicator(),
                                                       );
                                                     } else if (Projectssnapshot
-                                                            .data!.docs.length <
-                                                        1) {
+                                                        .data!.docs.isEmpty) {
                                                       return Padding(
                                                         padding: EdgeInsets.only(
                                                             top: MediaQuery.of(
@@ -610,7 +610,7 @@ class _OtherAccountState extends State<OtherAccount> {
                                                                     .size
                                                                     .height *
                                                                 0.2),
-                                                        child: Center(
+                                                        child: const Center(
                                                           child: Text(
                                                               "No Projects Yet !"),
                                                         ),
@@ -638,13 +638,25 @@ class _OtherAccountState extends State<OtherAccount> {
                                                           return Card(
                                                             child: ListTile(
                                                               onTap: (() {
-                                                                Get.to(
-                                                                    const Project());
+                                                                context
+                                                                    .read<
+                                                                        dbManager>()
+                                                                    .ChangeObserverDoc(
+                                                                        projectdata);
+                                                                context
+                                                                    .read<
+                                                                        dbManager>()
+                                                                    .ChangeProjectDoc(
+                                                                        Subprojectdata);
                                                                 context
                                                                     .read<
                                                                         ManageRoute>()
                                                                     .ChangeProject(
                                                                         'Show Project');
+                                                                Get.to(
+                                                                    const Project(),
+                                                                    arguments:
+                                                                        Projectid);
                                                               }),
                                                               // leading: Text(book[index].rank.toString()),
                                                               title: Column(
@@ -659,16 +671,9 @@ class _OtherAccountState extends State<OtherAccount> {
                                                                           fontSize:
                                                                               18),
                                                                     ),
-                                                                    const Text(
-                                                                      "Members:",
-                                                                      style: TextStyle(
-                                                                          fontSize:
-                                                                              12),
-                                                                    )
                                                                   ]),
-                                                              trailing:
-                                                                  const Text(
-                                                                      "7"),
+                                                              trailing: Text(
+                                                                  "Members: ${Subprojectdata['memberList'].length}"),
                                                             ),
                                                           );
                                                         },

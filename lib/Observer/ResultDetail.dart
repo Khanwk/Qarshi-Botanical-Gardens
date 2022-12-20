@@ -11,17 +11,33 @@ class Button extends StatefulWidget {
 class _ButtonState extends State<Button> {
   List data = Get.arguments;
   String? url;
+  bool showone = false;
+  bool showtwo = false;
+  @override
+  void initState() {
+    super.initState();
+    if (data[0]["results"][data[1]]["images"].length > 1) {
+      setState(() {
+        showone = true;
+      });
+    }
+    if (data[0]["results"][data[1]]["images"].length > 2) {
+      setState(() {
+        showtwo = true;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(
-          child: Text(
-            "Result",
-            style: TextStyle(color: Colors.red),
-          ),
+        title: const Text(
+          "Result",
+          style: TextStyle(color: Colors.red),
         ),
         backgroundColor: Colors.white,
+        centerTitle: true,
         elevation: 0,
       ),
       body: Column(
@@ -70,43 +86,59 @@ class _ButtonState extends State<Button> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      url = data[0]["results"][data[1]]["images"][1]["url"]["o"]
-                          .toString();
-                    });
-                  },
+                  onTap: !showone
+                      ? null
+                      : () {
+                          setState(() {
+                            url = data[0]["results"][data[1]]["images"][1]
+                                    ["url"]["o"]
+                                .toString();
+                          });
+                        },
                   child: Padding(
                     padding: const EdgeInsets.all(7.0),
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.3,
-                      decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: Image.network(data[0]["results"][data[1]]
-                                          ["images"][1]["url"]["o"]
-                                      .toString())
-                                  .image)),
-                    ),
+                    child: !showone
+                        ? SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.3,
+                            child: const Center(child: Text('No Image')))
+                        : Container(
+                            width: MediaQuery.of(context).size.width * 0.3,
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: Image.network(data[0]["results"]
+                                                    [data[1]]["images"][1]
+                                                ["url"]["o"]
+                                            .toString())
+                                        .image)),
+                          ),
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      url = data[0]["results"][data[1]]["images"][2]["url"]["o"]
-                          .toString();
-                    });
-                  },
+                  onTap: !showtwo
+                      ? null
+                      : () {
+                          setState(() {
+                            url = data[0]["results"][data[1]]["images"][2]
+                                    ["url"]["o"]
+                                .toString();
+                          });
+                        },
                   child: Padding(
                     padding: const EdgeInsets.all(7.0),
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.3,
-                      decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: Image.network(data[0]["results"][data[1]]
-                                          ["images"][2]["url"]["o"]
-                                      .toString())
-                                  .image)),
-                    ),
+                    child: !showtwo
+                        ? SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.3,
+                            child: const Center(child: Text('No Image')))
+                        : Container(
+                            width: MediaQuery.of(context).size.width * 0.3,
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: Image.network(data[0]["results"]
+                                                    [data[1]]["images"][2]
+                                                ["url"]["o"]
+                                            .toString())
+                                        .image)),
+                          ),
                   ),
                 )
               ],

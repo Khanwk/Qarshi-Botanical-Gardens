@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_is_empty
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart%20';
 import 'package:flutter/material.dart';
@@ -40,6 +42,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -88,103 +91,135 @@ class _ChatPageState extends State<ChatPage> {
       ),
       body: Stack(
         children: <Widget>[
-          StreamBuilder(
-              stream: FirebaseFirestore.instance
-                  .collection('observers')
-                  .doc(context
-                      .watch<dbManager>()
-                      .currentobserverdoc['uid']
-                      .toString())
-                  .collection("messages")
-                  .doc(context.watch<dbManager>().observerdoc['uid'].toString())
-                  .collection('chats')
-                  .orderBy("date", descending: true)
-                  .snapshots(),
-              builder: (BuildContext context,
-                  AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else {
-                  if (snapshot.data!.docs.length < 1) {
-                    return Center(child: const Text("No Chat yet !"));
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.8,
+            child: StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection('observers')
+                    .doc(context
+                        .watch<dbManager>()
+                        .currentobserverdoc['uid']
+                        .toString())
+                    .collection("messages")
+                    .doc(context
+                        .watch<dbManager>()
+                        .observerdoc['uid']
+                        .toString())
+                    .collection('chats')
+                    .orderBy("date", descending: true)
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
                   } else {
-                    return ListView.builder(
-                        itemCount: snapshot.data!.docs.length,
-                        shrinkWrap: true,
-                        reverse: true,
-                        physics: const BouncingScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          final Timestamp timestamp =
-                              snapshot.data!.docs[index]['date'] as Timestamp;
-                          final DateTime dateTime = timestamp.toDate();
-                          final dateString =
-                              DateFormat('K:mm (dd-MM)').format(dateTime);
-                          return GestureDetector(
-                            onLongPress: () {
-                              PopupMenuButton(
-                                elevation: 20,
-                                enabled: true,
-                                onSelected: (value) {},
-                                itemBuilder: (context) => [
-                                  const PopupMenuItem(
-                                    child: Text("Project"),
-                                    value: "first",
-                                  ),
-                                  const PopupMenuItem(
-                                    child: Text("Observation"),
-                                    value: "Second",
-                                  ),
-                                ],
-                                // ],
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.only(
-                                  left: 14, right: 14, top: 10, bottom: 10),
-                              child: Align(
-                                alignment: (snapshot.data!.docs[index]
-                                            ['senderid'] !=
-                                        context
-                                            .watch<dbManager>()
-                                            .currentobserverdoc['uid']
-                                    ? Alignment.topLeft
-                                    : Alignment.topRight),
-                                child: Column(
-                                  children: [
-                                    GestureDetector(
-                                      onLongPress: () {},
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                          color: (snapshot.data!.docs[index]
+                    if (snapshot.data!.docs.length < 1) {
+                      return const Center(child: Text("No Chat yet !"));
+                    } else {
+                      return ListView.builder(
+                          itemCount: snapshot.data!.docs.length,
+                          shrinkWrap: true,
+                          reverse: true,
+                          physics: const BouncingScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            final Timestamp timestamp =
+                                snapshot.data!.docs[index]['date'] as Timestamp;
+                            final DateTime dateTime = timestamp.toDate();
+                            final dateString =
+                                DateFormat('K:mm (dd-MM)').format(dateTime);
+                            return GestureDetector(
+                              onLongPress: () {
+                                PopupMenuButton(
+                                  elevation: 20,
+                                  enabled: true,
+                                  onSelected: (value) {},
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: "first",
+                                      child: Text("Project"),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: "Second",
+                                      child: Text("Observation"),
+                                    ),
+                                  ],
+                                  // ],
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.only(
+                                    left: 14, right: 14, top: 10, bottom: 10),
+                                child: Align(
+                                  alignment: (snapshot.data!.docs[index]
+                                              ['senderid'] !=
+                                          context
+                                              .watch<dbManager>()
+                                              .currentobserverdoc['uid']
+                                      ? Alignment.topLeft
+                                      : Alignment.topRight),
+                                  child: Column(
+                                    children: [
+                                      GestureDetector(
+                                        onLongPress: () {},
+                                        child: Align(
+                                          alignment: snapshot.data!.docs[index]
                                                       ['senderid'] !=
                                                   context
                                                       .watch<dbManager>()
                                                       .currentobserverdoc['uid']
-                                              ? Colors.grey[300]
-                                              : Colors.red[200]),
-                                        ),
-                                        padding: const EdgeInsets.all(8),
-                                        child: Text(
-                                          snapshot.data!.docs[index]['message'],
-                                          style: const TextStyle(fontSize: 15),
+                                              ? Alignment.centerLeft
+                                              : Alignment.centerRight,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                              color: (snapshot.data!.docs[index]
+                                                          ['senderid'] !=
+                                                      context
+                                                              .watch<dbManager>()
+                                                              .currentobserverdoc[
+                                                          'uid']
+                                                  ? Colors.grey[300]
+                                                  : Colors.red[200]),
+                                            ),
+                                            padding: const EdgeInsets.all(8),
+                                            child: Text(
+                                              snapshot.data!.docs[index]
+                                                  ['message'],
+                                              style:
+                                                  const TextStyle(fontSize: 15),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    Text(dateString,
-                                        style: const TextStyle(fontSize: 10))
-                                  ],
+                                      Align(
+                                        alignment: snapshot.data!.docs[index]
+                                                    ['senderid'] !=
+                                                context
+                                                    .watch<dbManager>()
+                                                    .currentobserverdoc['uid']
+                                            ? Alignment.centerLeft
+                                            : Alignment.centerRight,
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 8.0, right: 8.0),
+                                          child: Text(dateString,
+                                              style: const TextStyle(
+                                                  fontSize: 10)),
+                                        ),
+                                      )
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        });
+                            );
+                          });
+                    }
                   }
-                }
-              }),
+                }),
+          ),
           Align(
             alignment: Alignment.bottomLeft,
             child: Container(
@@ -257,13 +292,13 @@ class _ChatPageState extends State<ChatPage> {
                             .set({"last_msg": message, 'time': DateTime.now()});
                       });
                     },
+                    backgroundColor: Colors.red,
+                    elevation: 0,
                     child: const Icon(
                       Icons.send,
                       color: Colors.white,
                       size: 18,
                     ),
-                    backgroundColor: Colors.red,
-                    elevation: 0,
                   ),
                 ],
               ),

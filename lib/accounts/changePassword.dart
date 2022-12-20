@@ -1,6 +1,7 @@
+// ignore_for_file: avoid_unnecessary_containers
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:qarshi_app/services/dbManager.dart';
 
@@ -36,7 +37,7 @@ class _ChangePassState extends State<ChangePass> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           backgroundColor: Colors.red,
-          title: Text("Change Password"),
+          title: const Text("Change Password"),
           centerTitle: true,
         ),
         body: Form(
@@ -136,12 +137,22 @@ class _ChangePassState extends State<ChangePass> {
                             if (value.trim().length < 6) {
                               return 'password must be at least 6 characters in length';
                             }
+                            if (currentpasswordController.text ==
+                                newpasswordController.text) {
+                              return 'Can\'t be same as old passsword';
+                            }
+                            // if (confirmpasswordController !=
+                            //     newpasswordController) {
+                            //   return 'New and Confirm Password don\'t match ';
+                            // }
+
                             //     // create account event
                             //     return null;
                             // } else {
                             //   return "Password don't match";
                             // }
                           }
+                          return null;
                         },
                       ),
                     ),
@@ -168,6 +179,16 @@ class _ChangePassState extends State<ChangePass> {
                             // } else {
                             //   return "Password don't match";
                           }
+                          if (confirmpasswordController.text !=
+                              newpasswordController.text) {
+                            return 'New and Confirm Password dont match ';
+                          }
+                          if (currentpasswordController.text ==
+                              confirmpasswordController.text) {
+                            return 'Can\'t be same as old passsword';
+                          }
+                          return null;
+
                           // }
                         },
                         decoration: InputDecoration(

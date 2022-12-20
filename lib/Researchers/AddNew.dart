@@ -202,7 +202,7 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
   }
 
   SendObservation() async {
-    var collectiondata = await FirebaseFirestore.instance
+    var collectiondata = FirebaseFirestore.instance
         .collection('observers')
         .where('role', isEqualTo: 'Researcher');
     var querySnapshots = await collectiondata.get();
@@ -218,6 +218,17 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
         'requestobservation': FieldValue.arrayUnion([obid])
       });
     }
+  }
+
+  getlocation() async {
+    Position position = await _getGeoLocationPosition();
+    GetAddressFromLatLong(position);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getlocation();
   }
 
   @override
@@ -265,15 +276,11 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                     child: Align(
                       alignment: Alignment.topLeft,
                       child: ElevatedButton(
-                          child: const Text(
-                            "Auto-Fill",
-                            style: TextStyle(color: Colors.red),
-                          ),
                           style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white, elevation: 0),
                           onPressed: (() async {
                             if (image1 != null) {
-                              uploadImage(
+                              await uploadImage(
                                 dropdownvalueImage1.toString(),
                                 // dropdownvalueImage2.toString(),
                                 // dropdownvalueImage3.toString()
@@ -283,16 +290,16 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                                     text: await data["results"][0]["species"]
                                         ["scientificName"]);
                                 _EnglishName = TextEditingController(
-                                    text: await data["results"][0]["species"]
+                                    text: data["results"][0]["species"]
                                             ["commonNames"]
                                         .toString());
                                 _Family = TextEditingController(
-                                    text: await data["results"][0]["species"]
+                                    text: data["results"][0]["species"]
                                             ["family"]['scientificName']
                                         .toString());
                               } else {
                                 Fluttertoast.showToast(
-                                    msg: 'No data Found',
+                                    msg: 'Please wait',
                                     toastLength: Toast.LENGTH_SHORT,
                                     gravity: ToastGravity.BOTTOM,
                                     timeInSecForIosWeb: 1,
@@ -310,18 +317,18 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                                   textColor: Colors.white,
                                   fontSize: 13.0);
                             }
-                          })),
+                          }),
+                          child: const Text(
+                            "Auto-Fill",
+                            style: TextStyle(color: Colors.red),
+                          )),
                     ),
                   ),
                   Align(
                       alignment: Alignment.topRight,
                       child: ElevatedButton(
-                          child: const Text(
-                            "Clear all",
-                            style: TextStyle(color: Colors.red),
-                          ),
                           style: ElevatedButton.styleFrom(
-                              primary: Colors.white, elevation: 0),
+                              backgroundColor: Colors.white, elevation: 0),
                           onPressed: (() {
                             _projectDescription.clear();
                             _projectName.clear();
@@ -359,7 +366,11 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                             _Inflorescense.clear();
                             _LeafColor.clear();
                             _StemShape.clear();
-                          }))),
+                          }),
+                          child: const Text(
+                            "Clear all",
+                            style: TextStyle(color: Colors.red),
+                          ))),
                 ],
               ),
             ),
@@ -375,8 +386,9 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                             controller: _projectName,
                           ),
                           CupertinoTextFormFieldRow(
-                            minLines: 3,
+                            minLines: 2,
                             maxLines: 4,
+                            keyboardType: TextInputType.multiline,
                             prefix: const Text('Discription : '),
                             controller: _projectDescription,
                           )
@@ -403,6 +415,14 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                               });
                               _projectDescription.clear();
                               _projectName.clear();
+                              Fluttertoast.showToast(
+                                  msg: 'Saved to your Profile',
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.red,
+                                  textColor: Colors.white,
+                                  fontSize: 13.0);
                             },
                             child: const Text('Save')),
                         SizedBox(
@@ -437,27 +457,6 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                                 children: [
                                   Visibility(
                                     visible: image1 == null,
-                                    child: SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height *
-                                              0.1,
-                                      width: MediaQuery.of(context).size.width *
-                                          0.25,
-                                      child: ElevatedButton(
-                                        child: const Icon(Icons.add_a_photo),
-                                        onPressed: () {
-                                          pickImage(
-                                              ImageSource.camera, image1, 1);
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                            primary: Colors.red,
-                                            // backgroundColor: Colors.white,
-                                            side: const BorderSide(
-                                              width: 2,
-                                              color: Colors.black,
-                                            )),
-                                      ),
-                                    ),
                                     // ignore: sized_box_for_whitespace
                                     replacement: Container(
                                         height:
@@ -469,6 +468,27 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                                         child: image1 == null
                                             ? const Text('No image to show')
                                             : Image.file(image1!)),
+                                    child: SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.1,
+                                      width: MediaQuery.of(context).size.width *
+                                          0.25,
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          pickImage(
+                                              ImageSource.camera, image1, 1);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                            // backgroundColor: Colors.white,
+                                            side: const BorderSide(
+                                              width: 2,
+                                              color: Colors.black,
+                                            )),
+                                        child: const Icon(Icons.add_a_photo),
+                                      ),
+                                    ),
                                   ),
                                   DropdownButton(
                                     value: dropdownvalueImage1,
@@ -498,28 +518,6 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                                   children: [
                                     Visibility(
                                       visible: image2 == null,
-                                      child: SizedBox(
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                0.1,
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.25,
-                                        child: ElevatedButton(
-                                          child: const Icon(Icons.add_a_photo),
-                                          onPressed: () {
-                                            pickImage(
-                                                ImageSource.camera, image2, 2);
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                              primary: Colors.red,
-                                              // backgroundColor: Colors.white,
-                                              side: const BorderSide(
-                                                width: 2,
-                                                color: Colors.black,
-                                              )),
-                                        ),
-                                      ),
                                       // ignore: sized_box_for_whitespace
                                       replacement: Container(
                                           height: MediaQuery.of(context)
@@ -533,6 +531,28 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                                           child: image2 == null
                                               ? const Text('No image to show')
                                               : Image.file(image2!)),
+                                      child: SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.1,
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.25,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            pickImage(
+                                                ImageSource.camera, image2, 2);
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                              // backgroundColor: Colors.white,
+                                              side: const BorderSide(
+                                                width: 2,
+                                                color: Colors.black,
+                                              )),
+                                          child: const Icon(Icons.add_a_photo),
+                                        ),
+                                      ),
                                     ),
                                     DropdownButton(
                                       value: dropdownvalueImage2,
@@ -564,26 +584,6 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                                   children: [
                                     Visibility(
                                       visible: image3 == null,
-                                      child: SizedBox(
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                0.1,
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.25,
-                                        child: ElevatedButton(
-                                          child: const Icon(Icons.add_a_photo),
-                                          onPressed: () => pickImage(
-                                              ImageSource.camera, image3, 3),
-                                          style: ElevatedButton.styleFrom(
-                                              primary: Colors.red,
-                                              // backgroundColor: Colors.white,
-                                              side: const BorderSide(
-                                                width: 2,
-                                                color: Colors.black,
-                                              )),
-                                        ),
-                                      ),
                                       // ignore: sized_box_for_whitespace
                                       replacement: Container(
                                           height: MediaQuery.of(context)
@@ -597,6 +597,26 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                                           child: image3 == null
                                               ? const Text('No image to show')
                                               : Image.file(image3!)),
+                                      child: SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.1,
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.25,
+                                        child: ElevatedButton(
+                                          onPressed: () => pickImage(
+                                              ImageSource.camera, image3, 3),
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                              // backgroundColor: Colors.white,
+                                              side: const BorderSide(
+                                                width: 2,
+                                                color: Colors.black,
+                                              )),
+                                          child: const Icon(Icons.add_a_photo),
+                                        ),
+                                      ),
                                     ),
                                     DropdownButton(
                                       value: dropdownvalueImage3,
@@ -790,7 +810,7 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                                           .ref()
                                           .child("observations")
                                           .child(docid)
-                                          .child(docid + "1");
+                                          .child("${docid}1");
                                       await ref.putFile(image1!);
 
                                       url1 = await ref.getDownloadURL();
@@ -800,7 +820,7 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                                             .ref()
                                             .child("observations")
                                             .child(docid)
-                                            .child(docid + "2");
+                                            .child("${docid}2");
                                         await ref.putFile(image1!);
 
                                         url2 = await ref.getDownloadURL();
@@ -810,7 +830,7 @@ class _ResearcherAddNewState extends State<ResearcherAddNew> {
                                               .ref()
                                               .child("observations")
                                               .child(docid)
-                                              .child(docid + "3");
+                                              .child("${docid}3");
                                           await ref.putFile(image1!);
 
                                           url3 = await ref.getDownloadURL();

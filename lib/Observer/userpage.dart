@@ -1,14 +1,14 @@
+// ignore_for_file: avoid_print
+
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get/get.dart';
-import 'package:provider/provider.dart';
 import 'package:qarshi_app/Observer/afterimage.dart';
 import 'package:qarshi_app/services/HomePage.dart';
 import 'package:image_picker/image_picker.dart';
-import '../services/RouteManager.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({Key? key}) : super(key: key);

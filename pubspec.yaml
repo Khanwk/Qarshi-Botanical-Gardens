@@ -58,6 +58,12 @@ dependencies:
   cloud_firestore: 4.1.0
   intl: 0.17.0
   email_auth: 1.0.0
+  badges: 2.0.3
+  shared_preferences: 2.0.15
+  firebase_messaging: 14.1.2
+  connectivity_plus: 3.0.2
+  overlay_support: 2.1.0
+  
 
 
 dev_dependencies:

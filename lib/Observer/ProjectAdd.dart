@@ -1,6 +1,9 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:qarshi_app/services/dbManager.dart';
@@ -24,6 +27,7 @@ class _ProjectAddState extends State<ProjectAdd> {
         backgroundColor: Colors.red,
         title: Visibility(
           visible: valid[1] == 'member',
+          replacement: const Text("Add Observation"),
           child: TextField(
             controller: _SearchQuerry,
             decoration: InputDecoration(
@@ -51,7 +55,6 @@ class _ProjectAddState extends State<ProjectAdd> {
                       });
                     })),
           ),
-          replacement: const Text("Add Observation"),
         ),
         actions: [
           Visibility(
@@ -70,124 +73,6 @@ class _ProjectAddState extends State<ProjectAdd> {
       ),
       body: Visibility(
         visible: valid[1] == 'member',
-        child: Visibility(
-          visible: show,
-          child: StreamBuilder(
-              stream: FirebaseFirestore.instance
-                  .collection('observers')
-                  .snapshots()
-                  .asBroadcastStream(),
-              builder: (BuildContext context,
-                  AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else {
-                  return ListView(
-                    children: [
-                      ...snapshot.data!.docs
-                          .where(
-                        (QueryDocumentSnapshot<Object?> element) =>
-                            element['name']
-                                .toString()
-                                .toLowerCase()
-                                .contains(_SearchQuerry.text.toLowerCase()),
-                      )
-                          .map((QueryDocumentSnapshot data) {
-                        String name = data['name'];
-                        String uid = data['uid'];
-                        List member =
-                            context.watch<dbManager>().projectdoc['memberList'];
-                        List RequestList = data['ProjectRequest'];
-                        String senderName = context
-                            .watch<dbManager>()
-                            .currentobserverdoc['name'];
-                        String senderuid = context
-                            .watch<dbManager>()
-                            .currentobserverdoc['uid'];
-                        return Card(
-                          child: ListTile(
-                              leading: const Image(
-                                width: 50,
-                                image: AssetImage('assets/Image/splash.png'),
-                              ), // Ink.image
-
-                              title: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      name,
-                                      style: const TextStyle(fontSize: 18),
-                                    ),
-                                    // Text(
-                                    //   "Rank: ${index + 1}",
-                                    //   style: const TextStyle(fontSize: 12),
-                                    // )
-                                  ]),
-                              trailing: Visibility(
-                                visible: !RequestList.contains(valid[0]) &&
-                                    !member.contains(name),
-                                child: IconButton(
-                                  icon: const Icon(Icons.person_add),
-                                  onPressed: (() {
-                                    // List l = valid[0];
-                                    FirebaseFirestore.instance
-                                        .collection("observers")
-                                        .doc(uid)
-                                        .update({
-                                      "ProjectRequest":
-                                          FieldValue.arrayUnion([valid[0]])
-                                    });
-                                    FirebaseFirestore.instance
-                                        .collection('observers')
-                                        .doc(uid)
-                                        .collection('request')
-                                        .doc(valid[0])
-                                        .set({
-                                      'message':
-                                          "I would like you to join me on this project",
-                                      "request": "",
-                                      "ProjectName": valid[0].toString(),
-                                      "observername": senderName,
-                                      "senderUid": senderuid
-                                    });
-                                  }),
-                                ),
-                                replacement: IconButton(
-                                  icon: const Icon(Icons.person_remove_alt_1),
-                                  onPressed: (() {
-                                    FirebaseFirestore.instance
-                                        .collection("observers")
-                                        .doc(uid)
-                                        .update({
-                                      "ProjectRequest":
-                                          FieldValue.arrayRemove([valid[0]])
-                                    });
-                                    FirebaseFirestore.instance
-                                        .collection('observers')
-                                        .doc(uid)
-                                        .collection('request')
-                                        .doc(valid[0])
-                                        .delete();
-                                  }),
-                                ),
-                              )),
-                        );
-                      }),
-                    ],
-                  );
-                  // return ListView.builder(
-                  //   itemCount: snapshot.data!.docs.length,
-                  //   itemBuilder: (context, index) {
-                  //     DocumentSnapshot projectdata = snapshot.data!.docs[index];
-
-                }
-              }),
-          replacement: const Align(
-              alignment: Alignment.center,
-              child: Text("Results will be shown here")),
-        ),
         replacement: StreamBuilder(
             stream: FirebaseFirestore.instance
                 .collection('observers')
@@ -242,11 +127,12 @@ class _ProjectAddState extends State<ProjectAdd> {
                                       ), // RoundedRectangleBorder
                                       child: Column(children: [
                                         Container(
-                                          decoration: const BoxDecoration(
+                                          decoration: BoxDecoration(
                                               image: DecorationImage(
-                                                  image: ExactAssetImage(
-                                                    'assets/Image/splash.png',
-                                                  ),
+                                                  image: Image.network(
+                                                          Subprojectdata[
+                                                              'image1'])
+                                                      .image,
                                                   fit: BoxFit.cover)),
                                           height: 100,
                                           width: 400,
@@ -323,12 +209,6 @@ class _ProjectAddState extends State<ProjectAdd> {
                                             child: IconButton(
                                               icon: const Icon(Icons.add),
                                               onPressed: () {
-                                                List addList = [Projectid];
-                                                final FirebaseAuth auth =
-                                                    FirebaseAuth.instance;
-                                                final User? user =
-                                                    auth.currentUser;
-                                                final userid = user!.uid;
                                                 FirebaseFirestore.instance
                                                     .collection('observers')
                                                     .doc(Provider.of<dbManager>(
@@ -342,6 +222,16 @@ class _ProjectAddState extends State<ProjectAdd> {
                                                       FieldValue.arrayUnion(
                                                           [Projectid].toList())
                                                 });
+                                                Fluttertoast.showToast(
+                                                    msg: 'Observation Added !',
+                                                    toastLength:
+                                                        Toast.LENGTH_SHORT,
+                                                    gravity:
+                                                        ToastGravity.BOTTOM,
+                                                    timeInSecForIosWeb: 1,
+                                                    backgroundColor: Colors.red,
+                                                    textColor: Colors.white,
+                                                    fontSize: 13.0);
                                               },
                                             ),
                                           ),
@@ -377,6 +267,140 @@ class _ProjectAddState extends State<ProjectAdd> {
                 );
               }
             }),
+        child: Visibility(
+          visible: show,
+          replacement: const Align(
+              alignment: Alignment.center,
+              child: Text("Results will be shown here")),
+          child: StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('observers')
+                  .snapshots()
+                  .asBroadcastStream(),
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else {
+                  return ListView(
+                    children: [
+                      ...snapshot.data!.docs
+                          .where(
+                        (QueryDocumentSnapshot<Object?> element) =>
+                            element['name']
+                                .toString()
+                                .toLowerCase()
+                                .contains(_SearchQuerry.text.toLowerCase()),
+                      )
+                          .map((QueryDocumentSnapshot data) {
+                        String name = data['name'];
+                        String uid = data['uid'];
+                        List member =
+                            context.watch<dbManager>().projectdoc['memberList'];
+                        List RequestList = data['ProjectRequest'];
+                        String senderName = context
+                            .watch<dbManager>()
+                            .currentobserverdoc['name'];
+                        String senderuid = context
+                            .watch<dbManager>()
+                            .currentobserverdoc['uid'];
+                        return Card(
+                          child: ListTile(
+                              leading: const Image(
+                                width: 50,
+                                image: AssetImage('assets/Image/splash.png'),
+                              ), // Ink.image
+
+                              title: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      name,
+                                      style: const TextStyle(fontSize: 18),
+                                    ),
+                                    // Text(
+                                    //   "Rank: ${index + 1}",
+                                    //   style: const TextStyle(fontSize: 12),
+                                    // )
+                                  ]),
+                              trailing: Visibility(
+                                visible: !RequestList.contains(valid[0]) &&
+                                    !member.contains(name),
+                                replacement: IconButton(
+                                  icon: const Icon(Icons.person_remove_alt_1),
+                                  onPressed: (() {
+                                    FirebaseFirestore.instance
+                                        .collection("observers")
+                                        .doc(uid)
+                                        .update({
+                                      "ProjectRequest":
+                                          FieldValue.arrayRemove([valid[0]])
+                                    });
+                                    FirebaseFirestore.instance
+                                        .collection('observers')
+                                        .doc(uid)
+                                        .collection('request')
+                                        .doc(valid[0])
+                                        .delete();
+                                    Fluttertoast.showToast(
+                                        msg: 'Request Canceled',
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.BOTTOM,
+                                        timeInSecForIosWeb: 1,
+                                        backgroundColor: Colors.red,
+                                        textColor: Colors.white,
+                                        fontSize: 13.0);
+                                  }),
+                                ),
+                                child: IconButton(
+                                  icon: const Icon(Icons.person_add),
+                                  onPressed: (() {
+                                    // List l = valid[0];
+                                    FirebaseFirestore.instance
+                                        .collection("observers")
+                                        .doc(uid)
+                                        .update({
+                                      "ProjectRequest":
+                                          FieldValue.arrayUnion([valid[0]])
+                                    });
+                                    FirebaseFirestore.instance
+                                        .collection('observers')
+                                        .doc(uid)
+                                        .collection('request')
+                                        .doc(valid[0])
+                                        .set({
+                                      'message':
+                                          "I would like you to join me on this project",
+                                      "request": "",
+                                      "ProjectName": valid[0].toString(),
+                                      "observername": senderName,
+                                      "senderUid": senderuid
+                                    });
+                                    Fluttertoast.showToast(
+                                        msg: 'Request Sent',
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.BOTTOM,
+                                        timeInSecForIosWeb: 1,
+                                        backgroundColor: Colors.red,
+                                        textColor: Colors.white,
+                                        fontSize: 13.0);
+                                  }),
+                                ),
+                              )),
+                        );
+                      }),
+                    ],
+                  );
+                  // return ListView.builder(
+                  //   itemCount: snapshot.data!.docs.length,
+                  //   itemBuilder: (context, index) {
+                  //     DocumentSnapshot projectdata = snapshot.data!.docs[index];
+
+                }
+              }),
+        ),
       ),
     );
   }
